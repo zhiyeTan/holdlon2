@@ -12,7 +12,6 @@ use z\lib\Basic;
  */
 class App{
 	public function run(){
-		echo $_SERVER['REQUEST_URI'];
 		//初始化配置项
 		Config::init();
 		//设置调试模式，生产环境请设置关闭
@@ -31,7 +30,7 @@ class App{
 		//根据配置设置时区
 		date_default_timezone_set(Config::$options['default_timezone']);
 		
-		Basic::logc('1', 'sdf');
+		Log::save('1', 'sdf');
 		
 	}
 

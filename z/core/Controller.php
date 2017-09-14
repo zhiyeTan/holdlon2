@@ -51,7 +51,7 @@ class Controller extends Template{
 			$content = date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']) . ' ';
 			$content .= Request::ip(0) . ' ';
 			$content .= $boolIsGET ? $_SERVER['REQUEST_URI'] : var_export($_POST, true);
-			Basic::logc($logName, $content);
+			Log::save($logName, $content);
 			//参数不合法时直接输出错误
 			if($error){
 				$this->displayError(405, '非法参数');

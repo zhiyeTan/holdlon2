@@ -18,6 +18,7 @@ const ERR_CONTROLLER_NOEXIST = '你正在访问一个不存在的控制节点!';
 const TEMPLATE_SUFFIX = '.tpl'; //模板后缀
 const WIDGET_SUFFIX = '.mdl'; //部件后缀
 
+const UNIFIED_LOG_PATH = UNIFIED_PATH . 'logs' . Z_DS; //日志存放路径
 const LOG_MAX_SIZE = 1000000; //日志文件大小上限，单位字节
 
 

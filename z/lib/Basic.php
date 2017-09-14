@@ -71,44 +71,37 @@ class Basic{
 	}
 	
 	/**
-	 * 记录日志
+	 * 列出指定目录的结构树
 	 * 
 	 * @access public
-	 * @param  string  $strFileName  日志文件名
-	 * @param  string  $strContent   单条日志的内容
-	 * @return boolean
+	 * @param  path    $pathTarget    目录路径
+	 * @return array
 	 */
-	public static function logc($strFileName, $strContent){
-		$withoutSuffixPath = APP_PATH . 'logs' . Z_DS . $strFileName;
-		$logPath = $withoutSuffixPath . '.txt';
-		// 如果文件存在且超过大小上限，则以当前时间重命名该文件
-		if(is_file($logPath) && filesize($logPath) > LOG_MAX_SIZE){
-			$newPath = $withoutSuffixPath . time() . '.txt';
-			// 设置一个值，防止出现死循环(一次延迟100毫秒，30次相当于3s)
-			$domax = 30;
-			// 循环，直到成功或者超时
-			$i = 0;
-			do{
-				++$i;
-				if(!rename($logPath, $newPath)){
-					usleep(100); // 延迟100毫秒
-				}
-			}
-			while(!$status && $i < $domax);
-		}
-		// 保存日志
-		return Basic::write($logPath, $strContent . PHP_EOL, false, true, false);
+	public static function listDirTree($pathTarget){
+		return self::recursiveDealDir($pathTarget, true);
+	}
+	
+	/**
+	 * 删除指定目录下的所有文件
+	 * 
+	 * @access public
+	 * @param  path    $pathTarget    目录路径
+	 */
+	public static function deleteDir($pathTarget){
+		return self::recursiveDealDir($pathTarget);
 	}
 	
 	/**
 	 * 递归处理目录
-	 * @access  public
+	 * 由于list和delete由同一参数控制，对外开放具有风险，因此由另外语义明确的函数调用
+	 * 
+	 * @access  private
 	 * @param   path      $pathTarget      目录路径
 	 * @param   boolean   $boolDelOrList   处理方式（默认false删除，true获取文档树）
 	 * @param   number    $intLevel        文档相对目录的层级
 	 * @return  nothing/array
 	 */
-	public static function recursiveDealDir($pathTarget, $boolDelOrList = false, $intLevel = 0){
+	private static function recursiveDealDir($pathTarget, $boolDelOrList = false, $intLevel = 0){
 		$i = 0;
 		$res = array();
 		$fp = dir($pathTarget);
@@ -117,23 +110,24 @@ class Basic{
 			if($item == '.' || $item == '..'){
 				continue;
 			}
-			$tmpPath = $fp->path . Z_DS . $item;
+			$tmpPath = rtrim($fp->path, Z_DS) . Z_DS . $item;
+			$type = is_dir($tmpPath);
 			// 这部分是获取文档树用的
 			if($boolDelOrList){
 				$res[$i] = array(
 					'name'	=> $item,
 					'path'	=> $tmpPath,
-					'type'	=> is_dir($tmpPath),
+					'type'	=> $type,
 					'level'	=> $intLevel
 				);
-				if(is_dir($tmpPath)){
-					$res[$i]['children'] = Basic::recursiveDealDir($tmpPath, $type, $intLevel + 1);
+				if($type){
+					$res[$i]['children'] = Basic::recursiveDealDir($tmpPath, $boolDelOrList, $intLevel + 1);
 				}
 				$i++;
 			}
 			// 这部分是执行删除操作
 			else{
-				if(is_dir($tmpPath)){
+				if($type){
 					@rmdir($tmpPath);
 				}
 				else{
@@ -141,6 +135,6 @@ class Basic{
 				}
 			}
 		}
-		return $boolDelOrList ? $res : '';
+		return $res;
 	}
 }

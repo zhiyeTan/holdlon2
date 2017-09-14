@@ -62,16 +62,26 @@ class Config{
 		}
 	}
 	/**
+	 * 获得当前应用目录名
+	 * 
+	 * @access public
+	 * @return string
+	 */
+	public static function getAppDirName(){
+		return self::$options['entry_maps'][$_GET['e']] ?? '';
+	}
+	/**
 	 * 定义应用路径
 	 * 
 	 * @access public
 	 * @return bool
 	 */
 	public static function setAppPath(){
-		if(!isset(self::$options['entry_maps'][$_GET['e']])){
-			return false;
+		$appDirName = self::getAppDirName();
+		if($appDirName){
+			define('APP_PATH', UNIFIED_PATH . $appDirName . Z_DS);
+			return true;
 		}
-		define('APP_PATH', UNIFIED_PATH . self::$options['entry_maps'][$_GET['e']] . Z_DS);
-		return true;
+		return false;
 	}
 }
