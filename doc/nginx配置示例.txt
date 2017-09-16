@@ -1,0 +1,26 @@
+server {
+	listen       8082;
+	server_name  www.tzy.com tzy.com;
+	charset      utf-8;
+	
+	root   "F:/htdocs/holdlon/entry";
+	
+	if (!-d $request_filename){
+		set $rule_0 1$rule_0;
+	}
+	if (!-f $request_filename){
+		set $rule_0 2$rule_0;
+	}
+	if ($rule_0 = "21"){
+		rewrite ^/(.*)$ /index.php?s=$1 last;
+	}
+
+	location ~ \.php(.*)$  {
+		fastcgi_pass   127.0.0.1:9000;
+		fastcgi_index  index.php;
+		fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+		fastcgi_param  PATH_INFO  $fastcgi_path_info;
+		fastcgi_param  PATH_TRANSLATED  $document_root$fastcgi_path_info;
+		include        fastcgi_params;
+	}
+}

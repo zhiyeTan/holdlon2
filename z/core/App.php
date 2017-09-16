@@ -21,7 +21,7 @@ class App{
 		//解析请求
 		Router::parse(Request::getQueryString());
 		//设置应用路径
-		if(Config::setAppPath()){
+		if(!Config::setAppPath()){
 			//报错：入口不存在
 			//(new Controller())->displayError(404, ERR_ENTRY_NOEXIST);
 		}
