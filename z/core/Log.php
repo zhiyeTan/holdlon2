@@ -7,6 +7,7 @@ class Log
 {
 	private static $logsPath; //日志路径
 	private function __construct(){} //禁止实例化
+	
 	/**
 	 * 设置当前应用对应的日志目录路径
 	 * 如不存在则创建
@@ -17,6 +18,7 @@ class Log
 		self::$logsPath = UNIFIED_LOG_PATH . Config::getAppDirName() . Z_DS;
 		Basic::mkFolder(self::$logsPath);
 	}
+	
 	/**
 	 * 获取日志路径
 	 * 
@@ -29,6 +31,7 @@ class Log
 		}
 		return self::$logsPath;
 	}
+	
 	/**
 	 * 保存一条日志
 	 * 
@@ -46,6 +49,7 @@ class Log
 			self::saveRecordTypeLog($strFileName, $magicVal);
 		}
 	}
+	
 	/**
 	 * 保存记录型的日志
 	 * 
@@ -72,8 +76,9 @@ class Log
 			}
 			while(!$status && $i < $domax);
 		}
-		Basic::write($logPath, $strContent . PHP_EOL, false, true, false);
+		Basic::write($logPath, $strContent . PHP_EOL, true, false);
 	}
+	
 	/**
 	 * 保存分析型的日志
 	 * 保存新日志时自动在该行后面加上[1]
@@ -86,7 +91,7 @@ class Log
 	 */
 	private static function saveAnalysisTypeLog($strFileName, $strKey, $strContent){
 		$logPath = self::getLogsPath() . $strFileName . '.txt';
-		$logContent = Basic::read($logPath, false);
+		$logContent = Basic::read($logPath);
 		$realKey = md5($strKey);
 		$needAdd = true;
 		if($logContent){
@@ -96,14 +101,15 @@ class Log
 				$needAdd = false;
 				$num += (int)$result[1];
 				$newlogContent = preg_replace('/('.$realKey.':.*?)(\[\d+\])('.PHP_EOL.')/', '\1['.$num.']\3', $logContent);
-				Basic::write($logPath, $newlogContent, false);
+				Basic::write($logPath, $newlogContent);
 			}
 		}
 		if($needAdd){
 			$realContent = $realKey . ':' . $strContent . '[1]';
-			Basic::write($logPath, $realContent . PHP_EOL, false, true, false);
+			Basic::write($logPath, $realContent . PHP_EOL, true, false);
 		}
 	}
+	
 	/**
 	 * 列出所有日志
 	 * 
@@ -112,6 +118,7 @@ class Log
 	public static function listLogs(){
 		return Basic::listDirTree(UNIFIED_LOG_PATH);
 	}
+	
 	/**
 	 * 列出指定日志的内容
 	 * 

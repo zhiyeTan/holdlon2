@@ -11,6 +11,7 @@ namespace z\core;
  */
 class Template{
 	private $data = array(); //数据栈
+	
 	/**
 	 * 赋值到数据栈中
 	 *
@@ -44,7 +45,7 @@ class Template{
 		//若设置不使用动态缓存则强制读取并重新编译模板
 		if(!Config::$options['php_cache_enable'] || !$dynamic){
 			//读取模板内容
-			$content = Basic::read($tplPath, false);
+			$content = Basic::read($tplPath);
 			//编译模板内容
 			$content = $this->complie($content);
 			//保存动态缓存并获得其路径
@@ -54,7 +55,7 @@ class Template{
 		}
 		//若设置使用实时数据且尚未实时读取时，获得模板中包含的部件并获取数据
 		if(!$realTime){
-			$this->getRealTimeData(Basic::read($tplPath, false));
+			$this->getRealTimeData(Basic::read($tplPath));
 		}
 		//将数组变量导入到当前的符号表
 		extract($this->data);
@@ -100,7 +101,7 @@ class Template{
 			if(is_file($tmpControllerPath)){
 				include $tmpControllerPath;
 			}
-			$pattern[$res[0][$k]] = Basic::read($tmpViewPath, false);
+			$pattern[$res[0][$k]] = Basic::read($tmpViewPath);
 		}
 		//取出部件数据并赋值到数据栈中
 		$this->assign(Widget::getWidgetData());

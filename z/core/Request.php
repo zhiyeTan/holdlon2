@@ -18,6 +18,7 @@ class Request{
 	public static function getQueryString(){
 		return $_GET['s'] ?? '';
 	}
+	
 	/**
 	 * 获取客户端IP地址
 	 * 

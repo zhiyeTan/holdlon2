@@ -17,6 +17,7 @@ use z\lib\Basic;
 class Router{
 	private static $mapsPath; //短地址映射所在路径
 	private function __construct(){}//静态类，不允许实例化
+	
 	/**
 	 * 创建Url
 	 * 
@@ -48,7 +49,7 @@ class Router{
 					}
 					//构造映射路径
 					$tmpFilePath = self::getMapPath() . $tmpStr;
-					$map = Basic::read($tmpFilePath, false);
+					$map = Basic::read($tmpFilePath);
 					//如果不存在映射或已存在映射，跳出循环
 					if(!$map || $map === $queryStr){
 						break;
@@ -56,7 +57,7 @@ class Router{
 				}
 				//如果不存在映射，建立映射
 				if(!$map){
-					Basic::write($tmpFilePath, $queryStr, false, false);
+					Basic::write($tmpFilePath, $queryStr, false);
 				}
 				$url .= $tmpStr;
 				break;
@@ -75,6 +76,7 @@ class Router{
 		$url .= $strSuffix ? ('.' . $strSuffix) : '';
 		return $url;
 	}
+
 	/**
 	 * 解析请求
 	 * 不受路由模式影响，以适应不同场景
@@ -97,7 +99,7 @@ class Router{
 			switch ($intPattern){
 				case SHORTURL_ROUTER_MODEL: //短地址模式
 					$filePath = self::getMapPath() . $strRequest;
-					$data = Basic::read($filePath, false);
+					$data = Basic::read($filePath);
 					if($data !== false){
 						parse_str($data, $tmpQueryArr);
 						foreach($tmpQueryArr as $k => $v){

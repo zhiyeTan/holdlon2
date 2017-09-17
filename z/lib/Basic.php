@@ -3,7 +3,7 @@
 namespace z\lib;
 
 /**
- * 文件系统管理
+ * 基本方法
  * 
  * @author 谈治烨<594557148@qq.com>
  * @copyright 使用或改进本代码请注明原作者
@@ -28,10 +28,9 @@ class Basic{
 	 * 
 	 * @access public
 	 * @param  path    $pathFile        文件路径
-	 * @param  bool    $boolSerialize   是否序列化的数据，默认true
 	 * @return string/bool
 	 */
-	public static function read($pathFile, $boolSerialize = true) {
+	public static function read($pathFile) {
 		$data = false;
 		if(is_file($pathFile) && is_readable($pathFile)){
 			$fp = fopen($pathFile, 'r');
@@ -40,7 +39,7 @@ class Basic{
 			}
 			fclose($fp);
 		}
-		return $boolSerialize && $data ? unserialize($data) : $data;
+		return $data;
 	}
 	
 	/**
@@ -49,12 +48,11 @@ class Basic{
 	 * @access public
 	 * @param  path         $pathFile        文件路径
 	 * @param  mixed        $nData           需要写入的数据
-	 * @param  true/false   $boolSerialize   是否序列化的数据，默认true
 	 * @param  true/false   $boolChange      是否变更内容，默认true
 	 * @param  true/false   $boolCover       是否覆盖原内容（覆盖或追加），默认true
 	 * @return boolean
 	 */
-	public static function write($pathFile, $nData, $boolSerialize = true, $boolChange = true, $boolCover = true){
+	public static function write($pathFile, $nData, $boolChange = true, $boolCover = true){
 		$bool = false;
 		if(!$boolChange && is_file($pathFile)){
 			$bool = true;
@@ -63,7 +61,7 @@ class Basic{
 			$mode = $boolCover ? 'w' : 'ab';
 			$file = fopen($pathFile, $mode);
 			if(flock($file, LOCK_EX)){
-				$bool = fputs($file, $boolSerialize ? serialize($nData) : $nData) ? true : false;
+				$bool = fputs($file, $nData) ? true : false;
 			}
 			fclose($file);
 		}

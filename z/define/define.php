@@ -15,6 +15,10 @@ const ERR_ENTRY_NOEXIST = '你正在访问一个不存在的应用入口!';
 const ERR_MODULE_NOEXIST = '你正在访问一个不存在的应用模块!';
 const ERR_CONTROLLER_NOEXIST = '你正在访问一个不存在的控制节点!';
 
+const CACHE_TYPE_STATIC = 0; //静态缓存类型
+const CACHE_TYPE_DYNAMIC = 1; //动态缓存类型
+const CACHE_TYPE_DATA = 2; //数据缓存类型
+
 const TEMPLATE_SUFFIX = '.tpl'; //模板后缀
 const WIDGET_SUFFIX = '.mdl'; //部件后缀
 

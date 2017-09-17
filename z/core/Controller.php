@@ -23,6 +23,7 @@ class Controller extends Template{
 
 	/**
 	 * 校验请求
+	 * 
 	 * @access public
 	 * @param  boolean  $boolIsGET  目标函数是否为GET
 	 */
@@ -88,6 +89,7 @@ class Controller extends Template{
 
 	/**
 	 * 读取API提供的数据
+	 * 
 	 * @access public
 	 * @param  string    $strDirName            模块名称
 	 * @param  string    $strModule             模块名称
@@ -128,22 +130,23 @@ class Controller extends Template{
 		}
 		return $apiData;
 	}
-
+	
 	/**
 	 * 异常页面渲染
-	 *
+	 * @todo   目前是直接响应一个简单的错误提示页，后期根据项目需要可重写成渲染特定模板
 	 * @access public
-	 * @param  number  $intCode     状态码
-	 * @param  string  $strContent  内容
+	 * @param  number  $intCode  状态码
+	 * @param  string  $content  内容
 	 */
-	public function displayError($intCode, $strContent){
+	public function displayError($intCode, $strContent)
+	{
 		$content = '<div style="padding: 24px 48px;"><h1>&gt;_&lt;|||</h1><p>' . $strContent . '</p>';
-		Response::init()
-		->setExpire(0)
-		->setCache(0)
-		->setCode($intCode)
-		->setContent($content)
-		->send();
+		response::init()
+			->setExpire(0)
+			->setCache(0)
+			->setCode($intCode)
+			->setContent($content)
+			->send();
 		exit(0);
 	}
 

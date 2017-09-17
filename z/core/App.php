@@ -30,7 +30,7 @@ class App{
 		//根据配置设置时区
 		date_default_timezone_set(Config::$options['default_timezone']);
 		
-		Log::save('1', 'htt://www.tzy.com/ 测试写入内容');
+		//Log::save('2', 'htt://www.tzy.com/', '测试写入内容');
 		
 	}
 

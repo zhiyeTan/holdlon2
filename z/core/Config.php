@@ -19,6 +19,7 @@ class Config{
 	public function __clone(){
 		trigger_error('Clone is not allow' , E_USER_ERROR);
 	}
+	
 	/**
 	 * 单例构造方法
 	 * 
@@ -42,6 +43,7 @@ class Config{
 	public static function setDebugModel($bool = true){
 		error_reporting($bool ? E_ALL : 0);
 	}
+	
 	/**
 	 * 加载预定义常量
 	 * 
@@ -50,6 +52,7 @@ class Config{
 	public static function loadConstant(){
 		require UNIFIED_PATH . 'z' . Z_DS . 'define' . Z_DS . 'define.php';
 	}
+	
 	/**
 	 * 加载应用重定义的配置
 	 * 
@@ -61,6 +64,7 @@ class Config{
 			self::$options = array_merge(self::$options, include $appConfigFile);
 		}
 	}
+	
 	/**
 	 * 获得当前应用目录名
 	 * 
@@ -70,6 +74,7 @@ class Config{
 	public static function getAppDirName(){
 		return self::$options['entry_maps'][$_GET['e']] ?? '';
 	}
+	
 	/**
 	 * 定义应用路径
 	 * 
