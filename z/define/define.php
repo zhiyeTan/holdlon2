@@ -1,5 +1,8 @@
 <?php
 
+const TMPFS_CACHE_DIR = 'cache'; //存放缓存文件的目录
+const TMPFS_SHORT_URL_DIR = 'surlmaps'; //存放短地址的目录
+
 //默认路由模式，协议名://主机名/模块名称(index时省略)/入口名-控制器名称-key-value-key-value... + 任意后缀名
 const DEFAULT_ROUTER_MODEL = 0;
 //短地址路由模式，协议名://主机名/模块名称(index时省略)/六位字符串 + 任意后缀名
@@ -7,7 +10,6 @@ const SHORTURL_ROUTER_MODEL = 1;
 //目录路由模式，协议名://主机名/入口名/模块名称/控制器名称/key/value/key/value...
 const DIRECTORY_ROUTER_MODEL = 2;
 
-const SHORT_URL_DIR = 'maps'; //存放短地址的目录
 const AUTHOR_KEY = 'zhiYeTan'; //作者密钥，作为加密的salt
 const BASE_CHAR_MAP = '0aAbBcC1dDeEfF2gGhHiI3jJkKlL4mMnNoO5pPqQrR6sStTuU7vVwWxX8yYzZ9'; //由大小写字母和数字组成的基本字符表
 

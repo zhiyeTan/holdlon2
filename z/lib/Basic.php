@@ -18,8 +18,7 @@ class Basic{
 	 */
 	public static function mkFolder($pathFolder){
 		if(!is_dir($pathFolder)){
-			@mkdir($pathFolder);
-			@chmod($pathFolder, 0777);
+			@mkdir($pathFolder, 0777, true);
 		}
 	}
 	

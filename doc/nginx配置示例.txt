@@ -1,9 +1,9 @@
 server {
-	listen       8082;
+	listen       80;
 	server_name  www.tzy.com tzy.com;
 	charset      utf-8;
-	
-	root   "F:/htdocs/holdlon/entry";
+	root         /var/www/tzy/entry;
+	index        index.php index.html;
 	
 	if (!-d $request_filename){
 		set $rule_0 1$rule_0;

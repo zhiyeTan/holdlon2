@@ -89,4 +89,15 @@ class Config{
 		}
 		return false;
 	}
+	
+	/**
+	 * 获得tmpfs下对应的应用目录路径
+	 * 
+	 * @access public
+	 * @param  $strTmpfsTypeName  tmpfs类型名（文件夹名）
+	 * @return path
+	 */
+	public static function getAppPathByTmpfs($strTmpfsTypeName){
+		return UNIFIED_PATH . 'tmpfs' . Z_DS . $strTmpfsTypeName . Z_DS . self::getAppDirName() . Z_DS;
+	}
 }

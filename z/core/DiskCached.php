@@ -25,7 +25,9 @@ class DiskCached{
 	private static function getCachePath($intCacheType = CACHE_TYPE_STATIC){
 		$filePath = $intCacheType == CACHE_TYPE_DYNAMIC ? self::$dynamicCachePath : self::$staticCachePath;
 		if(!$filePath){
-			$filePath = APP_PATH . ($intCacheType == CACHE_TYPE_DYNAMIC ? 'compiled' : 'cached') . Z_DS . $_GET['m'] . Z_DS;
+			$filePath = Config::getAppPathByTmpfs(TMPFS_CACHE_DIR)
+						. ($intCacheType == CACHE_TYPE_DYNAMIC ? 'compiled' : 'cached') . Z_DS
+						. $_GET['m'] . Z_DS;
 			Basic::mkFolder($filePath);
 			if($intCacheType == CACHE_TYPE_DYNAMIC){
 				self::$dynamicCachePath = $filePath;

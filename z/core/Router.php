@@ -57,6 +57,7 @@ class Router{
 				}
 				//如果不存在映射，建立映射
 				if(!$map){
+					Basic::mkFolder(self::getMapPath());
 					Basic::write($tmpFilePath, $queryStr, false);
 				}
 				$url .= $tmpStr;
@@ -168,7 +169,7 @@ class Router{
 	 */
 	private static function getMapPath(){
 		if(!self::$mapsPath){
-			self::$mapsPath = UNIFIED_PATH . 'z' . Z_DS . SHORT_URL_DIR . Z_DS;
+			self::$mapsPath = Config::getAppPathByTmpfs(SHORT_URL_DIR);
 		}
 		return self::$mapsPath;
 	}

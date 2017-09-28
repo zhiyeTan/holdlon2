@@ -1,0 +1,2 @@
+﻿此目录用来存放所有基于同一核心的应用的短地址映射文件
+对应的应用子目录路径从Config类的getAppPathByTmpfs方法获得，由Router类的mkUrl方法在保存映射文件时创建
