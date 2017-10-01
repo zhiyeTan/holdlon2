@@ -20,6 +20,23 @@ class Request{
 	}
 	
 	/**
+	 * 获取域名
+	 * 
+	 * @access public
+	 * @param  bool    $boolCurrent  是否取得当前域名
+	 * 否则获取一个不带域名前缀的值（用于设置cookie/session在所有域名与子域名中有效）
+	 * @return domain
+	 */
+	public static function getDomain($boolCurrent = true){
+		$host = $_SERVER['HTTP_HOST'];
+		$start = strpos($host, '.');
+		$start = $boolCurrent || $start === false ? 0 : $start;
+		$end = strrpos($host, ':');
+		$end = $end === false ? strlen($host) : $end;
+		return substr($host, $start, $end - $start);
+	}
+	
+	/**
 	 * 获取客户端IP地址
 	 * 
 	 * @access public

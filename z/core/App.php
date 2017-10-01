@@ -12,6 +12,8 @@ use z\lib\Basic;
  */
 class App{
 	public function run(){
+		echo $_SERVER["HTTP_X_FORWARDED_PROTO"];
+		
 		//初始化配置项
 		Config::init();
 		//设置调试模式，生产环境请设置关闭

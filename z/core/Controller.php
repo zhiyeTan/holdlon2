@@ -91,7 +91,7 @@ class Controller extends Template{
 	 * 读取API提供的数据
 	 * 
 	 * @access public
-	 * @param  string    $strDirName            模块名称
+	 * @param  string    $strDirName            应用目录名
 	 * @param  string    $strModule             模块名称
 	 * @param  string    $strController         控制器名称
 	 * @param  array     $arrArgs               请求参数
