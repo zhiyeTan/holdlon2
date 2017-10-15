@@ -9,8 +9,8 @@ namespace z\core;
  * 
  */
 class Config{
-	public static $options = []; //配置项
-	private static $_instance; //实例
+	public static $options = [];//配置项
+	private static $_instance;//实例
 	//私有构造方法
 	private function __construct(){
 		self::$options = require UNIFIED_PATH . 'z' . Z_DS . 'config' . Z_DS . 'config.php';
@@ -91,13 +91,132 @@ class Config{
 	}
 	
 	/**
+	 * 是否使用静态缓存
+	 * 
+	 * @access public
+	 * @param  int  $intCacheType  缓存类型（数据、静态HTML）
+	 * @return bool
+	 */
+	public static function whetherUseStaticCache($intCacheType){
+		if($intCacheType == CACHE_TYPE_DATA){
+			return self::$options['data_cache_expire'] >= 0;
+		}
+		return self::$options['html_cache_expire'] >= 0;
+	}
+	
+	/**
 	 * 获得tmpfs下对应的应用目录路径
 	 * 
 	 * @access public
-	 * @param  $strTmpfsTypeName  tmpfs类型名（文件夹名）
+	 * @param  string  $strTmpfsTypeName  tmpfs类型名（文件夹名）
+	 * @param  bool    $boolSetAppDir     是否设置应用目录，默认true
 	 * @return path
 	 */
-	public static function getAppPathByTmpfs($strTmpfsTypeName){
-		return UNIFIED_PATH . 'tmpfs' . Z_DS . $strTmpfsTypeName . Z_DS . self::getAppDirName() . Z_DS;
+	public static function getAppPathByTmpfs($strTmpfsTypeName, $boolSetAppDir = true){
+		$path = UNIFIED_PATH . 'tmpfs' . Z_DS . $strTmpfsTypeName . Z_DS;
+		if($boolSetAppDir){
+			$path .= self::getAppDirName() . Z_DS;
+		}
+		return $path;
 	}
+	
+	/**
+	 * 获得本地缓存文件服务所在位置目录
+	 * 
+	 * @access public
+	 * @param  int  $intCacheType  缓存类型
+	 * @return path
+	 */
+	public static function getLocafisPath($intCacheType){
+		$Path  = self::getAppPathByTmpfs(TMPFS_CACHE_DIR);
+		$Path .= ($intCacheType == CACHE_TYPE_DYNAMIC ? 'compiled' : 'cached') . Z_DS . $_GET['m'] . Z_DS;
+		return $Path;
+	}
+	
+	/**
+	 * 获得缓存文件名
+	 * 
+	 * @access public
+	 * @param  int  $intCacheType  缓存类型
+	 * @return string
+	 */
+	public static function getCacheFileName($intCacheType, $arrUrlParam = ''){
+		$arrUrlParam = $arrUrlParam ?: $_GET;
+		self::correctBasicUrlParamArray($arrUrlParam);
+		if($intCacheType == CACHE_TYPE_DYNAMIC){
+			$tmp = array(
+				'm'=>$arrUrlParam['m'],
+				'e'=>$arrUrlParam['e'],
+				'c'=>$arrUrlParam['c']
+			);
+		}
+		else{
+			$tmp = $arrUrlParam;
+		}
+		return http_build_query($tmp);
+	}
+	
+	/**
+	 * 修正基本的URL参数数组
+	 * 
+	 * @access public
+	 * @param  array    $arrTarget   要修正的数组
+	 */
+	public static function correctBasicUrlParamArray(&$arrTarget){
+		$arrTarget['m'] = $arrTarget['m'] ?? 'index';
+		$arrTarget['e'] = $arrTarget['e'] ?? 'index';
+		$arrTarget['c'] = $arrTarget['c'] ?? 'index';
+	}
+	
+	/**
+	 * 获得控制器路径
+	 * @access public
+	 * @param  string  $strControllerName  控制器名
+	 * @param  string  $strModuleName      模块名
+	 * @param  string  $strEntryName       入口名
+	 * @return path
+	 */
+	public static function getControllerPath($strControllerName = '', $strModuleName = '', $strEntryName = ''){
+		$path = $strEntryName ? (UNIFIED_PATH . $strEntryName . Z_DS) : APP_PATH;
+		$strModuleName = $strModuleName ?: $_GET['m'];
+		$strControllerName = $strControllerName ?: $_GET['c'];
+		return $path . 'controllers' . Z_DS . $strModuleName . Z_DS . $strControllerName . '.php';
+	}
+	
+	/**
+	 * 获得控制器别名
+	 * 
+	 * @access public
+	 * @param  string  $strModuleName      模块名
+	 * @param  string  $strEntryName       入口名
+	 * @return string
+	 */
+	public static function getControllerAlias($strControllerName = '', $strModuleName = ''){
+		$strModuleName = $strModuleName ?: $_GET['m'];
+		$strControllerName = $strControllerName ?: $_GET['c'];
+		return '\\controllers\\' . $strModuleName . '\\' . $strControllerName;
+	}
+	
+	/**
+	 * 获得视图文件路径
+	 * 
+	 * @access public
+	 * @param  string  $strViewName  视图名
+	 * @return path
+	 */
+	public static function getViewPath($strViewName){
+		return APP_PATH . 'views' . Z_DS . $_GET['m'] . Z_DS . $strViewName . TEMPLATE_SUFFIX;
+	}
+	
+	/**
+	 * 获得部件文件路径
+	 * 
+	 * @access public
+	 * @param  string  $strWidgetName  部件名
+	 * @return path
+	 */
+	public static function getWidgetPath($strWidgetName){
+		return APP_PATH . 'widget' . Z_DS . $strWidgetName . WIDGET_SUFFIX;
+	}
+	
 }

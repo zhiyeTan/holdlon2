@@ -7,9 +7,9 @@ use z\lib\Basic;
  * 路由策略
  * 使用URL重写规则后，到达php-fpm的URL将形如："协议名://主机名/index.php?s=..."
  * 包括以下3种路由模式：
- * 0、协议名://主机名/模块名称(index时省略)/入口名-控制器名称-key-value-key-value....html
- * 1、协议名://主机名/模块名称(index时省略)/六位字符串.html
- * 2、协议名://主机名/入口名/模块名称/控制器名称/key/value/key/value...
+ * DEFAULT_ROUTER_MODEL => 协议名://主机名/模块名称(index时省略)/入口名-控制器名称-key-value-key-value...
+ * SHORTURL_ROUTER_MODEL => 协议名://主机名/六位字符串
+ * DIRECTORY_ROUTER_MODEL => 协议名://主机名/模块名称/入口名/控制器名称/key/value/key/value...
  * 
  * @author 谈治烨<594557148@qq.com>
  * @copyright 使用或改进本代码请注明原作者
@@ -31,18 +31,18 @@ class Router{
 	public static function mkUrl($arrParam, $intPattern = DEFAULT_ROUTER_MODEL, $strDomain = '', $strSuffix = 'html'){
 		$url = $strDomain ?? '';
 		$url = trim($url, '/');
-		self::correctArray($arrParam);
+		Config::correctBasicUrlParamArray($arrParam);
 		switch($intPattern){
 			case SHORTURL_ROUTER_MODEL: //短地址模式
 				$queryStr = http_build_query($arrParam);
 				$hashStr = md5(AUTHOR_KEY . $queryStr);
 				//将加密串分成4段计算
-				for($i = 0; $i < 4; ++$i){
+				for($i = 0; $i < 4; $i++){
 					//将截取每段字符并转为10进制数组，再与0x3fffffff做位与运算（即把30位以后的字符归零）
 					$idx = hexdec(substr($hashStr, $i << 2, 4)) & 0x3fffffff;
 					//生成6位短链接
 					$tmpStr = '';
-					for($j = 0; $j < 6; ++$j){
+					for($j = 0; $j < 6; $j++){
 						//与$basechar的最大下标0x0000003d（即61）做位与运算得到新的数组下标后取得对应的值
 						$tmpStr .= BASE_CHAR_MAP[$idx & 0x0000003d];
 						$idx = $idx >> 5;
@@ -66,6 +66,7 @@ class Router{
 				$url .= '/' . $arrParam['m'] . '/' . $arrParam['e'] . '/' . $arrParam['c'] . '/';
 				unset($arrParam['e'], $arrParam['m'], $arrParam['c']);
 				$url .= strtr(http_build_query($arrParam), '=&', '/');
+				$url  = rtrim($url, '/');
 				break;
 			default: //默认模式
 				$url .= '/' . ($arrParam['m'] == 'index' ? '' : $arrParam['m'] . '/');
@@ -109,10 +110,11 @@ class Router{
 					}
 					break;
 				case DIRECTORY_ROUTER_MODEL: //目录型模式
-					$tmpArr = explode('/', $strRequest);
+					$tmpArr = explode('/', trim($strRequest, '/'));
 					$arrRequest = self::switchArray($tmpArr);
 					break;
 				default: //默认模式
+					$strRequest = trim($strRequest, '-');
 					$strRequest = strpos($strRequest, '/') ? str_replace('/', '-', $strRequest) : ('index-' . $strRequest);
 					$tmpArr = explode('-', $strRequest);
 					$arrRequest = self::switchArray($tmpArr);
@@ -150,18 +152,6 @@ class Router{
 	}
 	
 	/**
-	 * 修正数组
-	 * 
-	 * @access private
-	 * @param  array    $arrTarget   要修正的数组
-	 */
-	private static function correctArray(&$arrTarget){
-		$arrTarget['m'] = $arrTarget['m'] ?? 'index';
-		$arrTarget['e'] = $arrTarget['e'] ?? 'index';
-		$arrTarget['c'] = $arrTarget['c'] ?? 'index';
-	}
-	
-	/**
 	 * 获取短地址映射路径
 	 * 
 	 * @access private
@@ -169,7 +159,7 @@ class Router{
 	 */
 	private static function getMapPath(){
 		if(!self::$mapsPath){
-			self::$mapsPath = Config::getAppPathByTmpfs(SHORT_URL_DIR);
+			self::$mapsPath = Config::getAppPathByTmpfs(TMPFS_SHORT_URL_DIR, false);
 		}
 		return self::$mapsPath;
 	}
@@ -181,7 +171,7 @@ class Router{
 	 */
 	private static function replaceGET($arrTarget){
 		unset($_GET); //清空，同时可简单地过滤一些注入
-		self::correctArray($arrTarget);
+		Config::correctBasicUrlParamArray($arrTarget);
 		$_GET = $arrTarget;
 	}
 }

@@ -2,6 +2,8 @@
 
 namespace z\core;
 
+use z\lib\Basic;
+
 /**
  * 模板机制
  *
@@ -34,14 +36,13 @@ class Template{
 	 * 渲染模板
 	 *
 	 * @access public
-	 * @param  string  $strName  模板名
+	 * @param  string  $strViewName  视图名
 	 */
-	public function render($strName){
-		$realTime = false;
-		//获取动态缓存
-		$dynamic = cache::get(0);
+	public function render($strViewName){
+		//获取动态缓存文件
+		$dynamic = Locafis::getc();
 		//读取模板文件
-		$tplPath = APP_PATH . 'views' . Z_DS . $_GET['m'] . Z_DS . $strName . TEMPLATE_SUFFIX;
+		$tplPath = Config::getViewPath($strViewName);
 		//若设置不使用动态缓存则强制读取并重新编译模板
 		if(!Config::$options['php_cache_enable'] || !$dynamic){
 			//读取模板内容
@@ -49,13 +50,7 @@ class Template{
 			//编译模板内容
 			$content = $this->complie($content);
 			//保存动态缓存并获得其路径
-			$dynamic = cache::save($content, 0);
-			//标记已经是实时的部件数据
-			$realTime = true;
-		}
-		//若设置使用实时数据且尚未实时读取时，获得模板中包含的部件并获取数据
-		if(!$realTime){
-			$this->getRealTimeData(Basic::read($tplPath));
+			$dynamic = Locafis::savec($content);
 		}
 		//将数组变量导入到当前的符号表
 		extract($this->data);
@@ -92,19 +87,11 @@ class Template{
 	 */
 	private function parseWidget($strContent){
 		$pattern = array();
-		$widgetPath = APP_PATH . 'widget' . Z_DS;
 		preg_match_all('/\{\\$widgetView_([a-zA-Z]*)\}/', $strContent, $res);
 		foreach($res[1] as $k => $v){
-			$tmpControllerPath = $widgetPath . 'controllers' . Z_DS . $v . '.php';
-			$tmpViewPath = $widgetPath . 'views' . Z_DS . $v . WIDGET_SUFFIX;
-			// 允许部件控制器为空
-			if(is_file($tmpControllerPath)){
-				include $tmpControllerPath;
-			}
-			$pattern[$res[0][$k]] = Basic::read($tmpViewPath);
+			$widgetPath = Config::getWidgetPath($v);
+			$pattern[$res[0][$k]] = Basic::read($widgetPath);
 		}
-		//取出部件数据并赋值到数据栈中
-		$this->assign(Widget::getWidgetData());
 		return strtr($strContent, $pattern);
 	}
 
@@ -242,25 +229,6 @@ class Template{
 		//{$value.number}
 		$strContent = preg_replace('/\\$([a-zA-Z_][a-zA-Z0-9_]*)\.(\d*)/', "\$\\1[\\2]", $strContent);
 		return $strContent;
-	}
-
-	/**
-	 * 获取实时的部件数据
-	 * @access private
-	 * @param  sting  $strContent  模板内容
-	 */
-	private function getRealTimeData($strContent){
-		$widgetPath = APP_PATH . 'widget' . Z_DS;
-		preg_match_all('/\{\\$widgetView_([a-zA-Z]*)\}/', $strContent, $res);
-		foreach($res[1] as $k => $v){
-			$tmpControllerPath = $widgetPath . 'controllers' . Z_DS . $v . '.php';
-			//允许部件控制器为空
-			if(is_file($tmpControllerPath)){
-				include $tmpControllerPath;
-			}
-		}
-		//取出部件数据并赋值到数据栈中
-		$this->assign(Widget::getWidgetData());
 	}
 
 }

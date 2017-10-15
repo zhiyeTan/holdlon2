@@ -55,7 +55,7 @@ class Controller extends Template{
 			Log::save($logName, $content);
 			//参数不合法时直接输出错误
 			if($error){
-				$this->displayError(405, '非法参数');
+				$this->displayError(405, ERR_ILLEGAL_PARAMETER);
 			}
 			//删除多余的参数
 			foreach($diff as $k){
@@ -65,11 +65,6 @@ class Controller extends Template{
 				else{
 					unset($_POST[$v]);
 				}
-			}
-			//如果GET参数存在差异，重设静态与动态缓存的文件名
-			if($boolIsGET){
-				Cache::setCacheName($_GET);
-				Cache::setCacheName($_GET, 0);
 			}
 		}
 		//过滤参数
@@ -101,12 +96,19 @@ class Controller extends Template{
 	public function getApiData($strDirName, $strModule, $strController, $arrArgs = array(), $boolCallDelayAction = true){
 		$apiData = array();
 		//设置api对应的缓存名，并尝试获取缓存
-		$apiEMC = array('e' => z::$configure['api_entry'], 'm' => $strModule, 'c' => $strController);
-		$apiData = Cache::setCacheName(array_merge($apiEMC, $arrArgs), 2)->get(2);
+		$apiBasicUrlParam = array(
+			'm' => $strModule,
+			'e' => $strDirName,
+			'c' => $strController
+		);
+		$apiUrlParam = array_merge($apiBasicUrlParam, $arrArgs);
+		$apiCacheFileName = Config::getCacheFileName(CACHE_TYPE_DATA, $apiUrlParam);
+		//获取json数据
+		$apiData = Locafis::get(CACHE_TYPE_DATA, $apiCacheFileName);
 		if(!$apiData){
 			//没有缓存则执行api接口函数
-			$apiPath = UNIFIED_PATH . $strDirName . Z_DS . 'controllers' . Z_DS . $strModule . Z_DS . $strController . '.php';
-			$alias = '\\controllers\\' . $strModule . '\\' . $strController;
+			$apiPath = Config::getControllerPath($strController, $strModule, $strDirName);
+			$alias = Config::getControllerAlias($strController, $strModule);
 			include $apiPath;
 			$object = new $alias();
 			if(method_exists($object, 'main')){
@@ -119,9 +121,9 @@ class Controller extends Template{
 				//重置响应内容和类型
 				Response::setContentType('html')->setContent('');
 				//保存数据缓存
-				Cache::save($apiData, 2);
-				$_GET = $tmpGet;
+				Locafis::save($apiData, $apiCacheFileName);
 				//重置为当前GET参数
+				$_GET = $tmpGet;
 			}
 		}
 		//是否调用api的延后函数
@@ -132,16 +134,16 @@ class Controller extends Template{
 	}
 	
 	/**
-	 * 异常页面渲染
-	 * @todo   目前是直接响应一个简单的错误提示页，后期根据项目需要可重写成渲染特定模板
+	 * 渲染一个友好的错误提示页
+	 * 
 	 * @access public
 	 * @param  number  $intCode  状态码
 	 * @param  string  $content  内容
 	 */
 	public function displayError($intCode, $strContent)
 	{
-		$content = '<div style="padding: 24px 48px;"><h1>&gt;_&lt;|||</h1><p>' . $strContent . '</p>';
-		response::init()
+		$content = '<div style="padding: 24px 48px;"><h1>&gt;_&lt;#</h1><p>' . $strContent . '</p>';
+		Response::init()
 			->setExpire(0)
 			->setCache(0)
 			->setCode($intCode)
