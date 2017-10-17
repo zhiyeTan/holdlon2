@@ -50,7 +50,7 @@ class Controller extends Template{
 		//若存在差异键名或非法验证，记录请求信息到日志中
 		if($diff || $error){
 			$content = date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']) . ' ';
-			$content .= Request::ip(0) . ' ';
+			$content .= Request::getIp(0) . ' ';
 			$content .= $boolIsGET ? $_SERVER['REQUEST_URI'] : var_export($_POST, true);
 			Log::save($logName, $content);
 			//参数不合法时直接输出错误

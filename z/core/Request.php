@@ -44,7 +44,7 @@ class Request{
 	 * @param  boolean  $boolAdv  是否进行高级模式获取（有可能被伪装）
 	 * @return array
 	 */
-	public static function ip($intType = 0, $boolAdv = false){
+	public static function getIp($intType = 0, $boolAdv = false){
 		$intType = $intType ? 1 : 0;
 		static $ip = null;
 		if(null !== $ip) return $ip[$intType];

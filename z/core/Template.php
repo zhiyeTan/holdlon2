@@ -59,7 +59,7 @@ class Template{
 		//载入模板
 		require $dynamic;
 		//返回缓冲内容并清空
-		response::setContent(ob_get_clean());
+		Response::setContent(ob_get_clean());
 	}
 
 	/**
