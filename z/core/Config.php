@@ -10,10 +10,15 @@ namespace z\core;
  */
 class Config{
 	public static $options = [];//配置项
+	public static $dbConfig = [];//数据库配置
+	public static $redisConfig = [];//redis配置
 	private static $_instance;//实例
 	//私有构造方法
 	private function __construct(){
-		self::$options = require UNIFIED_PATH . 'z' . Z_DS . 'config' . Z_DS . 'config.php';
+		$path = UNIFIED_PATH . 'z' . Z_DS . 'config' . Z_DS;
+		self::$options = require $path . 'config.php';
+		self::$dbConfig = require $path . 'dbConfig.php';
+		self::$redisConfig = require $path . 'redisConfig.php';
 	}
 	//禁止用户复制对象实例
 	public function __clone(){
