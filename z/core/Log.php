@@ -6,7 +6,7 @@ use z\lib\Basic;
 class Log
 {
 	private static $logsPath; //日志路径
-	private function __construct(){} //禁止实例化
+	private function __construct(){} //静态类，禁止实例化
 	
 	/**
 	 * 设置当前应用对应的日志目录路径

@@ -11,8 +11,7 @@ use z;
  * @copyright 使用或改进本代码请注明原作者
  * 
  */
-class Response
-{
+class Response{
 	//状态码地图（常用200、301、304、401、404）
 	private static $codeMap = array(
 		100 => 'HTTP/1.1 100 Continue',
@@ -69,22 +68,15 @@ class Response
 		'xml'			=> 'Content-type: text/xml',
 		'flash'			=> 'Content-Type: application/x-shockw**e-flash'
 	);
-	private static $api_errno = false;//api请求的错误标记
+	private static $api_errno = ERRNO_NONE;//api请求的错误标记
 	private static $api_message = '';//api请求的提示信息
-	private static $lang;//页面语言
+	private static $code = 200;//状态码
+	private static $contentType = 'html';//内容类型
 	private static $content;//响应内容
-	private static $contentType;//内容类型
-	private static $code;//状态码
 	private static $expire;//本地缓存时间
 	private static $cache;//是否使用静态缓存
 	private static $_instance;//类实例
-	//禁止直接创建对象
-	private function __construct(){
-		self::$lang = Config::$options['default_lang'];
-		self::$expire = Config::$options['local_expire'];
-		self::$code = 200;
-		self::$contentType = 'html';
-	}
+	private function __construct(){}//禁止直接创建对象
 	//禁止用户复制对象实例
 	public function __clone(){
 		trigger_error('Clone is not allow' ,E_USER_ERROR);
@@ -92,12 +84,13 @@ class Response
 	
 	/**
 	 * 单例构造方法
+	 * 这个单例只是为了链式操作
 	 * 
 	 * @access public
-	 * @return this
+	 * @return class
 	 */
 	public static function init(){
-		if(!isset(self::$_instance)){
+		if(!self::$_instance){
 			$c = __CLASS__;
 			self::$_instance = new $c();
 		}
@@ -118,12 +111,35 @@ class Response
 	
 	/**
 	 * 设置响应内容
+	 * 当响应内容为数组时，自动修正响应类型为json
 	 * 
 	 * @access public
 	 * @param  mixed   $content  响应内容
-	 * @return this
+	 * @return class
 	 */
 	public static function setContent($content){
+		//如果响应内容为数组，修正内容类型为json
+		if(is_array($content)){
+			self::$contentType = 'json';
+		}
+		//格式化JSON
+		if(self::$contentType == 'json'){
+			$content = array(
+				'errno'		=> self::$api_errno,
+				'message'	=> self::$api_message,
+				'data'		=> $content
+			);
+			$content = json_encode($content);
+		}
+		//静态主机地址
+		$staticDomain = addcslashes(rtrim(Config::$options['static_domain'], '/') . '/', '/');
+		//静态资源后缀名，以|分割
+		$staticSuffix = 'jpg|png|bmp|gif';
+		//修正静态资源的路径（不包括站外资源引用）
+		$pattern = '/([\'|\"])((?!http)[^\'|\"]*?(jpg|png|bmp|gif))([\'|\"])/i';
+		$replacement = '\1' . $staticDomain . '\2\4';
+		$content = preg_replace($pattern, $replacement, $content);
+		//保存到属性中
 		self::$content = $content;
 		return self::$_instance;
 	}
@@ -133,7 +149,7 @@ class Response
 	 * 
 	 * @access public
 	 * @param  string  $type  内容类型
-	 * @return this
+	 * @return class
 	 */
 	public static function setContentType($type){
 		if(in_array($type, array_keys(self::$contentTypeMap))){
@@ -147,7 +163,7 @@ class Response
 	 * 
 	 * @access public
 	 * @param  number  $code  状态吗
-	 * @return this
+	 * @return class
 	 */
 	public static function setCode($code){
 		if(in_array($code, array_keys(self::$codeMap))){
@@ -161,7 +177,7 @@ class Response
 	 * 
 	 * @access public
 	 * @param  number  $timeStamp  有效时间（单位s）
-	 * @return this
+	 * @return class
 	 */
 	public static function setExpire($timeStamp){
 		self::$expire = (int) $timeStamp;
@@ -173,7 +189,7 @@ class Response
 	 * 
 	 * @access public
 	 * @param  boolean  $status  是否使用缓存
-	 * @return this
+	 * @return class
 	 */
 	public static function setCache($status){
 		self::$cache = !!$status;
@@ -184,11 +200,11 @@ class Response
 	 * 设置API错误标记
 	 * 
 	 * @access public
-	 * @param  boolean  $bool  是否发生错误
-	 * @return this
+	 * @param  int  $intErrno  错误号
+	 * @return class
 	 */
-	public static function setApiErrno($bool){
-		self::$api_errno = $bool;
+	public static function setApiErrno($intErrno){
+		self::$api_errno = $intErrno;
 		return self::$_instance;
 	}
 	
@@ -197,7 +213,7 @@ class Response
 	 * 
 	 * @access public
 	 * @param  string  $msg  错误信息
-	 * @return this
+	 * @return class
 	 */
 	public static function setApiMessage($msg){
 		self::$api_message = $msg;
@@ -212,30 +228,20 @@ class Response
 	public static function send(){
 		//检查 HTTP 表头是否已被发送
 		if(!headers_sent()){
+			$expire = self::$expire ?? Config::$options['local_expire'];
 			//发送头部信息
 			header(self::$codeMap[self::$code]);
-			header('Content-language: ' . self::$lang);
-			header('Cache-Control: max-age=' . self::$expire . ',must-revalidate');
+			header('Content-language: ' . Config::$options['default_lang']);
+			header('Cache-Control: max-age=' . $expire . ',must-revalidate');
 			header('Last-Modified:' . gmdate('D,d M Y H:i:s') . ' GMT');
-			header('Expires:' . gmdate('D,d M Y H:i:s', $_SERVER['REQUEST_TIME'] + self::$expire) . ' GMT');
+			header('Expires:' . gmdate('D,d M Y H:i:s', $_SERVER['REQUEST_TIME'] + $expire) . ' GMT');
 			header(self::$contentTypeMap[self::$contentType]);
-		}
-		//格式化JSON再输出
-		if(self::$contentType == 'json'){
-			self::$content = array(
-				'errno'		=> self::$api_errno,
-				'message'	=> self::$api_message,
-				'data'		=> self::$content
-			);
-			self::$content = json_encode(self::$content);
 		}
 		//未设置时，采用配置中对应的状态设置
 		if(!self::$cache && self::$cache !== false){
 			$cacheType = self::$contentType == 'json' ? CACHE_TYPE_DATA : CACHE_TYPE_STATIC;
 			self::$cache = Config::whetherUseStaticCache($cacheType);
 		}
-		//TODO 这里判断是否使用了静态主机，若使用，则替换掉所有非http/https开头的静态文件的路径为指向静态主机的路径
-		//preg_match_all('/(?!http[s]{0,1}:\/\/)(.*?jpg|png|js|css|mp4)/i', $content, $res);
 		//成功且有相应内容并使用缓存时保存缓存
 		if(200 == self::$code && self::$content && self::$cache){
 			Locafis::save(self::$content);

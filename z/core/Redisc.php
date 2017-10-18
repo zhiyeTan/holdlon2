@@ -100,22 +100,32 @@ class Redisc{
 	public static function get($strKey, $strType = 'default', $boolAssoc = false){
 		self::connect($strType, false);
 		$value = self::$redis->get($strKey);
-		return $boolAssoc ? unserialize($value) : $value;
+		return $boolAssoc ? json_decode($value, true) : $value;
 	}
 	
 	/**
 	 * 设置键值
 	 * 
 	 * @access public
-	 * @param  string  $strKey    键名
-	 * @param  string  $strValue  键值
-	 * @param  string  $strType   类型
+	 * @param  string  $strKey   键名
+	 * @param  string  $nValue   键值
+	 * @param  string  $strType  类型
 	 */
-	public static function set($strKey, $strValue, $strType = 'default'){
+	public static function set($strKey, $nValue, $strType = 'default', $expire = null){
 		self::connect($strType);
-		$value = is_array($strValue) ? serialize($strValue) : $strValue;
-		self::$redis->set($strKey, $value);
+		$value = is_array($nValue) ? json_encode($nValue) : $nValue;
+		if($expire && is_int($expire)){
+			self::$redis->setex($strKey, $expire, $value);
+		}
+		else{
+			self::$redis->set($strKey, $value);
+		}
 	}
+	
+	/**
+	 * 通过事务来设置键值
+	 */
+	//public static function setByTransaction(){}
 	
 	/**
 	 * 设置键值

@@ -11,20 +11,19 @@ use z;
  * @copyright 使用或改进本代码请注明原作者
  * 
  */
-class Cookie
-{
+class Cookie{
 	private static $domain;//作用域
 	private static $isHttps;//是否通过HTTPS传输
+	private static $expire;//有效期
 	private static $_instance;//类实例
 	//禁止直接创建对象
-	private function __construct($boolCurrent, $boolUseHttps)
-	{
+	private function __construct($boolCurrent, $boolUseHttps){
 		self::$domain = Request::getDomain($boolCurrent);
 		self::$isHttps = $boolUseHttps;
+		self::$expire = Config::$options['cookie_expire'];
 	}
 	//禁止用户复制对象实例
-	public function __clone()
-	{
+	public function __clone(){
 		trigger_error('Clone is not allow' , E_USER_ERROR);
 	}
 	
@@ -32,12 +31,10 @@ class Cookie
 	 * 单例构造方法
 	 * 
 	 * @access public
-	 * @return this
+	 * @return class
 	 */
-	public static function init($boolCurrent = false, $boolUseHttps = false)
-	{
-		if(!self::$_instance)
-		{
+	public static function init($boolCurrent = false, $boolUseHttps = false){
+		if(!self::$_instance){
 			$c = __CLASS__;
 			self::$_instance = new $c($boolCurrent, $boolUseHttps);
 		}
@@ -48,40 +45,38 @@ class Cookie
 	 * 设置cookie
 	 * 
 	 * @access public
-	 * @param  string  $key    键名
-	 * @param  string  $value  键值
+	 * @param  string  $strKey  键名
+	 * @param  mixed   $nValue  键值
 	 * @return boolean
 	 */
-	public static function set($key, $value)
-	{
-		return setcookie($key, $value, z::$configure['cookie_expire'], '/', self::$domain, self::$isHttps);
+	public static function set($strKey, $nValue){
+		$value = is_array($nValue) ? json_encode($nValue) : $nValue;
+		return setcookie($strKey, $value, self::$expire, '/', self::$domain, self::$isHttps);
 	}
 	
 	/**
 	 * 获取cookie值
 	 * 
 	 * @access public
-	 * @param  string  $key    键名
+	 * @param  string  $strKey     键名
+	 * @param  bool    $boolAssoc  是否取得数组
 	 * @return value/boolean
 	 */
-	public static function get($key)
-	{
-		if(empty($_COOKIE[$key]))
-		{
+	public static function get($strKey, $boolAssoc = false){
+		if(empty($_COOKIE[$strKey])){
 			return false;
 		}
-		return $_COOKIE[$key];
+		return $boolAssoc ? json_decode($_COOKIE[$strKey], true) : $_COOKIE[$strKey];
 	}
 	
 	/**
 	 * 删除cookie值
 	 * 
 	 * @access public
-	 * @param  string  $key    键名
+	 * @param  string  $strKey  键名
 	 * @return boolean
 	 */
-	public static function delete($key)
-	{
-		return setcookie($key, NULL, -1);
+	public static function del($strKey){
+		return setcookie($strKey, NULL, -1);
 	}
 }

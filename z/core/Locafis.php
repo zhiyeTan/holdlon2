@@ -14,7 +14,7 @@ use z\lib\Basic;
 class Locafis{
 	private static $staticCachePath;//静态缓存路径
 	private static $dynamicCachePath;//静态缓存路径
-	private function __construct(){}//不允许创建对象
+	private function __construct(){}//静态类，禁止构造对象
 	
 	/**
 	 * 获得缓存文件存放路径

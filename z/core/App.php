@@ -60,5 +60,4 @@ class App{
 			$object->delay();
 		}
 	}
-
 }

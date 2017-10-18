@@ -130,7 +130,7 @@ class Controller extends Template{
 		if($boolCallDelayAction && method_exists($object, 'delay')){
 			$object->delay();
 		}
-		return $apiData;
+		return $apiData['data'];
 	}
 	
 	/**

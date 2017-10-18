@@ -39,12 +39,15 @@ class Template{
 	 * @param  string  $strViewName  视图名
 	 */
 	public function render($strViewName){
-		//获取动态缓存文件
-		$dynamic = Locafis::getc();
-		//读取模板文件
-		$tplPath = Config::getViewPath($strViewName);
+		$flag = Config::$options['php_cache_enable'];
+		if($flag){
+			//获取动态缓存文件
+			$dynamic = Locafis::getc();
+		}
 		//若设置不使用动态缓存则强制读取并重新编译模板
-		if(!Config::$options['php_cache_enable'] || !$dynamic){
+		if(!$flag || !$dynamic){
+			//读取模板文件
+			$tplPath = Config::getViewPath($strViewName);
 			//读取模板内容
 			$content = Basic::read($tplPath);
 			//编译模板内容

@@ -9,6 +9,7 @@ namespace z\core;
  * 
  */
 class Request{
+	private function __construct(){}//静态类，禁止构造对象
 	/**
 	 * 获取查询字符串
 	 * 

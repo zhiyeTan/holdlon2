@@ -13,6 +13,8 @@ const DIRECTORY_ROUTER_MODEL = 2;
 const AUTHOR_KEY = 'zhiYeTan'; //作者密钥，作为加密的salt
 const BASE_CHAR_MAP = '0aAbBcC1dDeEfF2gGhHiI3jJkKlL4mMnNoO5pPqQrR6sStTuU7vVwWxX8yYzZ9'; //由大小写字母和数字组成的基本字符表
 
+const ERRNO_NONE = 0;//没有发生错误
+
 const ERR_ENTRY_NOT_EXIST = '访问了一个不存在的应用入口!';
 const ERR_CONTROLLER_NOT_EXIST = '访问了一个不存在的控制节点!';
 const ERR_CONTROLLER_METHOD_NOT_EXIST = '调用了一个不存在的控制方法!';
