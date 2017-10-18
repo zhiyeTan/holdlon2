@@ -124,8 +124,33 @@ class Redisc{
 	
 	/**
 	 * 通过事务来设置键值
+	 * 
+	 * @access public
+	 * @param  string  $strKey   键名
+	 * @param  string  $nValue   键值
+	 * @param  string  $strType  类型
 	 */
-	//public static function setByTransaction(){}
+	public static function setByTransaction($strKey, $nValue, $strType = 'default', $expire = null){
+		self::connect($strType);
+		$value = is_array($nValue) ? json_encode($nValue) : $nValue;
+		//监听键名
+		self::$redis->watch($strKey);
+		//开启事务
+		self::$redis->multi();
+		if($expire && is_int($expire)){
+			self::$redis->setex($strKey, $expire, $value);
+		}
+		else{
+			self::$redis->set($strKey, $value);
+		}
+		self::$redis->incr($strKey);
+		if(!self::$redis->exec()){
+			//取消事务
+			self::$redis->discard();
+		}
+		//停止监听
+		self::$redis->unwatch($strKey);
+	}
 	
 	/**
 	 * 设置键值
