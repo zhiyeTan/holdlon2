@@ -29,6 +29,12 @@ class App{
 		Config::loadAppConfig();
 		//根据配置设置时区
 		date_default_timezone_set(Config::$options['default_timezone']);
+		
+		Redisc::init();
+		//Redisc::set('color', 'green');
+		echo Redisc::get('color');
+		exit;
+		
 		//获取控制器文件路径
 		$controllerFilePath = Config::getControllerPath();
 		if(!is_file($controllerFilePath)){

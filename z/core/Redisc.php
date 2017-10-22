@@ -1,6 +1,7 @@
 <?php
 namespace z\core;
 
+use Redis;
 use z\lib\Basic;
 
 /**
@@ -19,12 +20,12 @@ use z\lib\Basic;
  */
 class Redisc{
 	private static $clusterCfg = [];//集群配置
-	private static $redis;//redis对象
+	private static $clusterObj = [];//集群对象[redis1, redis2, redis3...]
+	private static $clusterMap = [];//集群配置与对象的映射[$serverType.'_'.$storeType=>[serverType=>string, storeType=>string, objIdx=>int]]
 	private static $_instance;//类实例
 	//私有的构造函数
 	private function __construct(){
 		self::$clusterCfg = Config::$redisConfig;
-		self::$redis = new Redis();
 	}
 	//禁止用户复制对象实例
 	public function __clone(){
@@ -54,6 +55,12 @@ class Redisc{
 	 */
 	private static function connect($strType, $boolMaster = true){
 		$storeType = $strType;
+		//构造映射的键名
+		$mapKey = ($boolMaster ? 'master' : 'salve') . '_' . $storeType;
+		//如果存在映射，立即返回对应的redis对象
+		if(isset(self::$clusterMap[$mapKey])){
+			return self::$clusterObj[self::$clusterMap[$mapKey]['objIdx']];
+		}
 		//取得从机配置
 		if(!$boolMaster){
 			$serverType = 'salve';
@@ -76,16 +83,39 @@ class Redisc{
 			$serverType = 'master';
 			$storeType = empty(self::$clusterCfg['master'][$strType]) ? 'default' : $strType;
 		}
+		//构建新的映射键名
+		$newMapKey = $serverType . '_' . $storeType;
+		//如果存在映射键名，立即返回对应的redis对象
+		if(isset(self::$clusterMap[$newMapKey])){
+			return self::$clusterObj[self::$clusterMap[$newMapKey]['objIdx']];
+		}
+		//检查在映射中是否有不同键名，但使用相同配置的情况，有则增加对应映射，并返回redis对象
+		foreach(self::$clusterMap as $k => $v){
+			if($v['serverType'] == $serverType && $v['storeType'] == $storeType){
+				self::$clusterMap[$newMapKey] = $v;
+				return self::$clusterObj[$v['objIdx']];
+			}
+		}
 		
+		$newObjIdx = count(self::$clusterObj);
 		//主服务器仅一个配置
 		$targetCfg = self::$clusterCfg[$serverType][$storeType];
 		//从服务器可能存在多个配置，取得其中一个
+		//TODO 如果是从属服务器，应该随机从服务器列表中抽取一个配置进行连接，直到成功或遍历结束
 		if($serverType == 'salve'){
-			//TODO 这里采用随机数去分配，也许一个严谨的根据ip的分配方式会更加理想
-			$max = count($targetCfg) - 1;
-			$targetCfg = $targetCfg[mt_rand(0, $max)];
+			$max = count($targetCfg);
+			$currIdx = $max > self::$randIdx ? $max % self::$randIdx : self::$randIdx % $max;
+			$targetCfg = $targetCfg[$currIdx];
 		}
-		self::$redis->connect($targetCfg[0], $targetCfg[1]);
+		$redis = new Redis();
+		$redis->connect($targetCfg[0], $targetCfg[1]);
+		self::$clusterObj[] = $redis;
+		self::$clusterMap[$newMapKey] = array(
+			'serverType'	=> $serverType,
+			'storeType'		=> $storeType,
+			'objIdx'		=> $newObjIdx
+		);
+		return $redis;
 	}
 	
 	/**
@@ -98,8 +128,8 @@ class Redisc{
 	 * @return string/array
 	 */
 	public static function get($strKey, $strType = 'default', $boolAssoc = false){
-		self::connect($strType, false);
-		$value = self::$redis->get($strKey);
+		$redis = self::connect($strType, false);
+		$value = $redis->get($strKey);
 		return $boolAssoc ? json_decode($value, true) : $value;
 	}
 	
@@ -112,13 +142,13 @@ class Redisc{
 	 * @param  string  $strType  类型
 	 */
 	public static function set($strKey, $nValue, $strType = 'default', $expire = null){
-		self::connect($strType);
+		$redis = self::connect($strType);
 		$value = is_array($nValue) ? json_encode($nValue) : $nValue;
 		if($expire && is_int($expire)){
-			self::$redis->setex($strKey, $expire, $value);
+			$redis->setex($strKey, $expire, $value);
 		}
 		else{
-			self::$redis->set($strKey, $value);
+			$redis->set($strKey, $value);
 		}
 	}
 	
@@ -131,25 +161,25 @@ class Redisc{
 	 * @param  string  $strType  类型
 	 */
 	public static function setByTransaction($strKey, $nValue, $strType = 'default', $expire = null){
-		self::connect($strType);
+		$redis = self::connect($strType);
 		$value = is_array($nValue) ? json_encode($nValue) : $nValue;
 		//监听键名
-		self::$redis->watch($strKey);
+		$redis->watch($strKey);
 		//开启事务
-		self::$redis->multi();
+		$redis->multi();
 		if($expire && is_int($expire)){
-			self::$redis->setex($strKey, $expire, $value);
+			$redis->setex($strKey, $expire, $value);
 		}
 		else{
-			self::$redis->set($strKey, $value);
+			$redis->set($strKey, $value);
 		}
-		self::$redis->incr($strKey);
-		if(!self::$redis->exec()){
+		$redis->incr($strKey);
+		if(!$redis->exec()){
 			//取消事务
-			self::$redis->discard();
+			$redis->discard();
 		}
 		//停止监听
-		self::$redis->unwatch($strKey);
+		$redis->unwatch($strKey);
 	}
 	
 	/**
@@ -160,7 +190,7 @@ class Redisc{
 	 * @param  string  $strType  类型
 	 */
 	public static function del($strKey, $strType = 'default'){
-		self::connect($strType);
-		self::$redis->delete($strKey);
+		$redis = self::connect($strType);
+		$redis->delete($strKey);
 	}
 }
