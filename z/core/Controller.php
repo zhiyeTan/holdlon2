@@ -9,7 +9,8 @@ namespace z\core;
  * @copyright 使用或改进本代码请注明原作者
  *
  */
-class Controller extends Template{
+class Controller extends Template
+{
 	//受许可的GET参数的键名数组，如：array('cid', 'keyword', 'page')
 	//需验证的GET参数的键名及规则值对数组，如：array('cid'=>'int', 'keyword'=>'addslashes', 'page'=>'int')
 	//需过滤的GET参数的键名，默认值，规则数组，如：array(array('cid', 0, 'int'), array('keyword', '', 'addslashes', array('page', 1, 'int')))

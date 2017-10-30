@@ -11,7 +11,8 @@ use z\core\session as session;
  * @copyright 使用或改进本代码请注明原作者
  * 
  */
-class Safe{
+class Safe
+{
 	private function __construct(){} //禁止实例化
 	
 	/**

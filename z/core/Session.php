@@ -11,7 +11,8 @@ use z;
  * @copyright 使用或改进本代码请注明原作者
  * 
  */
-class Session{
+class Session
+{
 	//保存实例在此属性中
 	private static $_instance;
 	//禁止直接创建对象

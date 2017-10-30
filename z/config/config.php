@@ -2,6 +2,9 @@
 
 return [
 	
+	//调试模式（生产环境下请关闭）
+	'app_debug'				=> true,
+	
 	//入口文件名与应用位置文件夹名的值对映射
 	'entry_maps'			=> [
 								'index'		=> 'app',

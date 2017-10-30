@@ -10,12 +10,13 @@ use z\lib\Basic;
  * @copyright 使用或改进本代码请注明原作者
  *
  */
-class App{
+class App
+{
 	public function run(){
 		//初始化配置项
 		Config::init();
-		//设置调试模式，生产环境请设置关闭
-		Config::setDebugModel(true);
+		//设置调试模式
+		Config::setDebugModel();
 		//加载预定义的常量
 		Config::loadConstant();
 		//解析请求
@@ -23,16 +24,22 @@ class App{
 		//设置应用路径
 		if(!Config::setAppPath()){
 			//报错：入口不存在
-			(new Controller())->displayError(404, ERR_ENTRY_NOT_EXIST);
+			trigger_error(ERR_ENTRY_NOT_EXIST, E_USER_ERROR);
 		}
 		//加载应用配置
 		Config::loadAppConfig();
 		//根据配置设置时区
 		date_default_timezone_set(Config::$options['default_timezone']);
 		
+		ThrowableHandler::register();
+		
+		//echo $aa;
+		
+		//new ThrowableHandler('sfsdfdsf', 0);
+		
 		Redisc::init();
-		//Redisc::set('color', 'green');
-		echo Redisc::get('color');
+		Redisc::set('color', 'green');
+		//echo Redisc::get('color');
 		exit;
 		
 		//获取控制器文件路径

@@ -11,7 +11,8 @@ use z\lib\Basic;
  * @copyright 使用或改进本代码请注明原作者
  *
  */
-class Template{
+class Template
+{
 	private $data = array(); //数据栈
 	
 	/**

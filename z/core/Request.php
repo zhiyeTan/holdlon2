@@ -8,7 +8,8 @@ namespace z\core;
  * @copyright 使用或改进本代码请注明原作者
  * 
  */
-class Request{
+class Request
+{
 	private function __construct(){}//静态类，禁止构造对象
 	/**
 	 * 获取查询字符串

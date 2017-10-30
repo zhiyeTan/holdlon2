@@ -11,7 +11,8 @@ use z\lib\Basic;
  * @copyright 使用或改进本代码请注明原作者
  *
  */
-class Locafis{
+class Locafis
+{
 	private static $staticCachePath;//静态缓存路径
 	private static $dynamicCachePath;//静态缓存路径
 	private function __construct(){}//静态类，禁止构造对象

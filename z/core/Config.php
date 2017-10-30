@@ -8,7 +8,8 @@ namespace z\core;
  * @copyright 使用或改进本代码请注明原作者
  * 
  */
-class Config{
+class Config
+{
 	public static $options = [];//配置项
 	public static $dbConfig = [];//数据库配置
 	public static $redisConfig = [];//redis配置
@@ -43,10 +44,9 @@ class Config{
 	 * 设置调试模式
 	 * 
 	 * @access public
-	 * @param  bool    $bool   默认true
 	 */
-	public static function setDebugModel($bool = true){
-		error_reporting($bool ? E_ALL : 0);
+	public static function setDebugModel(){
+		error_reporting(self::$options['app_debug'] ? E_ALL : 0);
 	}
 	
 	/**

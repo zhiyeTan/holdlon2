@@ -9,7 +9,8 @@ namespace z\lib;
  * @copyright 使用或改进本代码请注明原作者
  * 
  */
-class Basic{
+class Basic
+{
 	/**
 	 * 创建文件夹
 	 * 

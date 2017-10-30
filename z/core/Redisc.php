@@ -18,7 +18,8 @@ use z\lib\Basic;
  * @copyright 使用或改进本代码请注明原作者
  * 
  */
-class Redisc{
+class Redisc
+{
 	private static $clusterCfg = [];//集群配置
 	private static $clusterObj = [];//集群对象[redis1, redis2, redis3...]
 	private static $clusterMap = [];//集群配置与对象的映射[$serverType.'_'.$storeType=>[serverType=>string, storeType=>string, objIdx=>int]]
@@ -61,8 +62,13 @@ class Redisc{
 		if(isset(self::$clusterMap[$mapKey])){
 			return self::$clusterObj[self::$clusterMap[$mapKey]['objIdx']];
 		}
+		//取得主机配置
+		if($boolMaster){
+			$serverType = 'master';
+			$storeType = empty(self::$clusterCfg['master'][$strType]) ? 'default' : $strType;
+		}
 		//取得从机配置
-		if(!$boolMaster){
+		else{
 			$serverType = 'salve';
 			//尝试匹配指定类型的从机
 			if(empty(self::$clusterCfg['salve'][$storeType])){
@@ -78,11 +84,6 @@ class Redisc{
 				}
 			}
 		}
-		//取得主机配置
-		if($boolMaster){
-			$serverType = 'master';
-			$storeType = empty(self::$clusterCfg['master'][$strType]) ? 'default' : $strType;
-		}
 		//构建新的映射键名
 		$newMapKey = $serverType . '_' . $storeType;
 		//如果存在映射键名，立即返回对应的redis对象
@@ -97,17 +98,25 @@ class Redisc{
 			}
 		}
 		
-		$newObjIdx = count(self::$clusterObj);
-		//主服务器仅一个配置
-		$targetCfg = self::$clusterCfg[$serverType][$storeType];
-		//从服务器可能存在多个配置，取得其中一个
-		//TODO 如果是从属服务器，应该随机从服务器列表中抽取一个配置进行连接，直到成功或遍历结束
-		if($serverType == 'salve'){
-			$max = count($targetCfg);
-			$currIdx = $max > self::$randIdx ? $max % self::$randIdx : self::$randIdx % $max;
-			$targetCfg = $targetCfg[$currIdx];
-		}
 		$redis = new Redis();
+		
+		//主服务器仅一个配置
+		if($boolMaster){
+			$targetCfg = self::$clusterCfg[$serverType][$storeType];
+			
+		}
+		//从服务器可能存在多个配置，取得其中一个
+		else{
+			$newObjIdx = count(self::$clusterObj);
+			//TODO 如果是从属服务器，应该随机从服务器列表中抽取一个配置进行连接，直到成功或遍历结束
+			if($serverType == 'salve'){
+				$max = count($targetCfg);
+				$currIdx = $max > self::$randIdx ? $max % self::$randIdx : self::$randIdx % $max;
+				$targetCfg = $targetCfg[$currIdx];
+			}
+		}
+		
+		
 		$redis->connect($targetCfg[0], $targetCfg[1]);
 		self::$clusterObj[] = $redis;
 		self::$clusterMap[$newMapKey] = array(

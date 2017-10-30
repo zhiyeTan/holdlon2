@@ -11,7 +11,8 @@ use z;
  * @copyright 使用或改进本代码请注明原作者
  * 
  */
-class Response{
+class Response
+{
 	//状态码地图（常用200、301、304、401、404）
 	private static $codeMap = array(
 		100 => 'HTTP/1.1 100 Continue',

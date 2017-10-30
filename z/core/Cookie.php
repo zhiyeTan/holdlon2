@@ -11,7 +11,8 @@ use z;
  * @copyright 使用或改进本代码请注明原作者
  * 
  */
-class Cookie{
+class Cookie
+{
 	private static $domain;//作用域
 	private static $isHttps;//是否通过HTTPS传输
 	private static $expire;//有效期

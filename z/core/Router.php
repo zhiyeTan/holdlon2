@@ -14,7 +14,8 @@ use z\lib\Basic;
  * @author 谈治烨<594557148@qq.com>
  * @copyright 使用或改进本代码请注明原作者
  */
-class Router{
+class Router
+{
 	private static $mapsPath; //短地址映射所在路径
 	private function __construct(){}//静态类，不允许实例化
 	
