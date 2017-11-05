@@ -19,6 +19,8 @@ class App
 		Config::setDebugModel();
 		//加载预定义的常量
 		Config::loadConstant();
+		//注册异常和错误处理方法
+		ThrowableHandler::register();
 		//解析请求
 		Router::parse(Request::getQueryString());
 		//设置应用路径
@@ -30,23 +32,11 @@ class App
 		Config::loadAppConfig();
 		//根据配置设置时区
 		date_default_timezone_set(Config::$options['default_timezone']);
-		
-		ThrowableHandler::register();
-		
-		//echo $aa;
-		
-		//new ThrowableHandler('sfsdfdsf', 0);
-		
-		Redisc::init();
-		Redisc::set('color', 'green');
-		//echo Redisc::get('color');
-		exit;
-		
 		//获取控制器文件路径
 		$controllerFilePath = Config::getControllerPath();
 		if(!is_file($controllerFilePath)){
 			//报错：控制器不存在
-			(new Controller())->displayError(404, ERR_CONTROLLER_NOT_EXIST);
+			trigger_error(ERR_CONTROLLER_NOT_EXIST, E_USER_ERROR);
 		}
 		//初始化控制器对象
 		$alias = Config::getControllerAlias();
@@ -59,7 +49,7 @@ class App
 		else{
 			if(!method_exists($object, 'main')){
 				//报错：控制器主方法不存在
-				(new Controller())->displayError(404, ERR_CONTROLLER_METHOD_NOT_EXIST);
+				trigger_error(ERR_CONTROLLER_METHOD_NOT_EXIST, E_USER_ERROR);
 			}
 			// 分别执行GET参数、POST参数的安全校验以及主方法
 			$object->keepSafeQuest();

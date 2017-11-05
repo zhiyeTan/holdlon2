@@ -54,9 +54,9 @@ class Controller extends Template
 			$content .= Request::getIp(0) . ' ';
 			$content .= $boolIsGET ? $_SERVER['REQUEST_URI'] : var_export($_POST, true);
 			Log::save($logName, $content);
-			//参数不合法时直接输出错误
+			//参数不合法时触发错误处理
 			if($error){
-				$this->displayError(405, ERR_ILLEGAL_PARAMETER);
+				trigger_error(ERR_ILLEGAL_PARAMETER, E_USER_ERROR);
 			}
 			//删除多余的参数
 			foreach($diff as $k){
@@ -132,25 +132,6 @@ class Controller extends Template
 			$object->delay();
 		}
 		return $apiData['data'];
-	}
-	
-	/**
-	 * 渲染一个友好的错误提示页
-	 * 
-	 * @access public
-	 * @param  number  $intCode  状态码
-	 * @param  string  $content  内容
-	 */
-	public function displayError($intCode, $strContent)
-	{
-		$content = '<div style="padding: 24px 48px;"><h1>&gt;_&lt;#</h1><p>' . $strContent . '</p>';
-		Response::init()
-			->setExpire(0)
-			->setCache(0)
-			->setCode($intCode)
-			->setContent($content)
-			->send();
-		exit(0);
 	}
 
 	/**

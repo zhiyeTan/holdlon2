@@ -112,7 +112,7 @@ class ThrowableHandler extends \Exception
 	 * @access public
 	 */
 	public static function tips(){
-		$content = self::getNormTips();
+		$content = Config::$options['tips_mode'] ? self::getNormTips() : self::getFriendlyTips();
 		Response::init()
 			->setExpire(0)
 			->setCache(0)
