@@ -16,6 +16,7 @@ class Config
 	private static $_instance;//实例
 	//私有构造方法
 	private function __construct(){
+		error_reporting(E_ALL);
 		$path = UNIFIED_PATH . 'z' . Z_DS . 'config' . Z_DS;
 		self::$options = require $path . 'config.php';
 		self::$dbConfig = require $path . 'dbConfig.php';
@@ -38,15 +39,6 @@ class Config
 			self::$_instance = new $c();
 		}
 		return self::$_instance;
-	}
-	
-	/**
-	 * 设置调试模式
-	 * 
-	 * @access public
-	 */
-	public static function setDebugModel(){
-		error_reporting(self::$options['app_debug'] ? E_ALL : 0);
 	}
 	
 	/**

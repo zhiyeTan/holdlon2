@@ -2,9 +2,6 @@
 
 return [
 	
-	//调试模式(生产环境下请关闭)
-	'app_debug'				=> true,
-	
 	//错误提示模式(0友好提示，1明细提示)
 	'tips_mode'				=> 0,
 	
@@ -18,6 +15,9 @@ return [
 	//TODO 同时做针对性的nginx/Apache设置，不允许运行非管理器外的非静态文件
 	//TODO 由于多站点调用资源的不可预估性，不提供删除操作
 	'static_domain'			=> 'http://static.tzy.com',
+	
+	//静态资源后缀名(以'|'分割)
+	'static_suffix'			=> 'jpg|png|bmp|gif',
 	
 	//服务器数据缓存有效期(单位s) [小于0表示不使用，0表示永久，大于0表示指定值]
 	'data_cache_expire'		=> -1,

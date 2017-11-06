@@ -39,7 +39,7 @@ class Template
 	 * @access public
 	 * @param  string  $strViewName  视图名
 	 */
-	public function render($strViewName){
+	public function display($strViewName){
 		$flag = Config::$options['php_cache_enable'];
 		if($flag){
 			//获取动态缓存文件

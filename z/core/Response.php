@@ -111,6 +111,20 @@ class Response
 	}
 	
 	/**
+	 * 设置内容类型
+	 * 
+	 * @access public
+	 * @param  string  $type  内容类型
+	 * @return class
+	 */
+	public static function setContentType($type){
+		if(in_array($type, array_keys(self::$contentTypeMap))){
+			self::$contentType = $type;
+		}
+		return self::$_instance;
+	}
+	
+	/**
 	 * 设置响应内容
 	 * 当响应内容为数组时，自动修正响应类型为json
 	 * 
@@ -119,6 +133,10 @@ class Response
 	 * @return class
 	 */
 	public static function setContent($content){
+		//引号匹配规则
+		$qmmRule = '[\'|\"]';
+		//静态主机地址
+		$staticDomain = rtrim(Config::$options['static_domain'], '/') . '/';
 		//如果响应内容为数组，修正内容类型为json
 		if(is_array($content)){
 			self::$contentType = 'json';
@@ -131,31 +149,17 @@ class Response
 				'data'		=> $content
 			);
 			$content = json_encode($content);
+			//JSON数据时将静态主机的'/'做一下转义
+			$staticDomain = addcslashes($staticDomain, '/');
+			//JSON数据时，引号前有一个转义符，需要匹配一下
+			$qmmRule = '\\\\' . $qmmRule;
 		}
-		//静态主机地址
-		$staticDomain = addcslashes(rtrim(Config::$options['static_domain'], '/') . '/', '/');
-		//静态资源后缀名，以|分割
-		$staticSuffix = 'jpg|png|bmp|gif';
 		//修正静态资源的路径（不包括站外资源引用）
-		$pattern = '/([\'|\"])((?!http)[^\'|\"]*?(jpg|png|bmp|gif))([\'|\"])/i';
+		$pattern = '/(' . $qmmRule . ')((?!http)[^\'|\"]*?(' . Config::$options['static_suffix'] . '))(' . $qmmRule . ')/i';
 		$replacement = '\1' . $staticDomain . '\2\4';
 		$content = preg_replace($pattern, $replacement, $content);
 		//保存到属性中
 		self::$content = $content;
-		return self::$_instance;
-	}
-	
-	/**
-	 * 设置内容类型
-	 * 
-	 * @access public
-	 * @param  string  $type  内容类型
-	 * @return class
-	 */
-	public static function setContentType($type){
-		if(in_array($type, array_keys(self::$contentTypeMap))){
-			self::$contentType = $type;
-		}
 		return self::$_instance;
 	}
 	

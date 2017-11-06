@@ -15,8 +15,6 @@ class App
 	public function run(){
 		//初始化配置项
 		Config::init();
-		//设置调试模式
-		Config::setDebugModel();
 		//加载预定义的常量
 		Config::loadConstant();
 		//注册异常和错误处理方法

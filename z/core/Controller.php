@@ -134,14 +134,4 @@ class Controller extends Template
 		return $apiData['data'];
 	}
 
-	/**
-	 * 渲染指定页面
-	 *
-	 * @access public
-	 * @param  string  $strTemplateName  模板名
-	 */
-	public function display($strTemplateName){
-		$this->render($strTemplateName);
-	}
-
 }
