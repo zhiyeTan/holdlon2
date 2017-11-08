@@ -15,7 +15,7 @@ class Log
 	 * @access private
 	 */
 	private static function setLogsPath(){
-		self::$logsPath = UNIFIED_LOG_PATH . Config::getAppDirName() . Z_DS;
+		self::$logsPath = UNIFIED_LOG_PATH . APP_DIR_NAME . Z_DS;
 		Basic::mkFolder(self::$logsPath);
 	}
 	

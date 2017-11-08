@@ -60,16 +60,35 @@ class Config
 		if(is_file($appConfigFile)){
 			self::$options = array_merge(self::$options, include $appConfigFile);
 		}
+		//修正静态资源相关设置
+		self::$options['static_domain'] = rtrim(self::$options['static_domain'], '/') . '/';
+		self::$options['static_suffix'] = trim(self::$options['static_suffix'], '|');
+		//设定时区
+		date_default_timezone_set(self::$options['default_timezone']);
+	}
+	
+	/**
+	 * 修正基本的URL参数数组
+	 * 
+	 * @access public
+	 * @param  array    $arrTarget   要修正的数组
+	 */
+	public static function correctBasicUrlParamArray(&$arrTarget){
+		$arrTarget['m'] = $arrTarget['m'] ?? 'index';
+		$arrTarget['e'] = $arrTarget['e'] ?? 'index';
+		$arrTarget['c'] = $arrTarget['c'] ?? 'index';
 	}
 	
 	/**
 	 * 获得当前应用目录名
 	 * 
 	 * @access public
+	 * @param  string  $strEntryName  应用入口名
 	 * @return string
 	 */
-	public static function getAppDirName(){
-		return self::$options['entry_maps'][$_GET['e']] ?? '';
+	public static function getAppDirName($strEntryName = ''){
+		$strEntryName = $strEntryName ?: $_GET['e'];
+		return $strEntryName == 'index' ? APP_DEFAULT_DIR : $strEntryName;
 	}
 	
 	/**
@@ -78,13 +97,9 @@ class Config
 	 * @access public
 	 * @return bool
 	 */
-	public static function setAppPath(){
-		$appDirName = self::getAppDirName();
-		if($appDirName){
-			define('APP_PATH', UNIFIED_PATH . $appDirName . Z_DS);
-			return true;
-		}
-		return false;
+	public static function defineAppInfo(){
+		define('APP_DIR_NAME', self::getAppDirName());
+		define('APP_PATH', UNIFIED_PATH . APP_DIR_NAME . Z_DS);
 	}
 	
 	/**
@@ -112,7 +127,7 @@ class Config
 	public static function getAppPathByTmpfs($strTmpfsTypeName, $boolSetAppDir = true){
 		$path = UNIFIED_PATH . 'tmpfs' . Z_DS . $strTmpfsTypeName . Z_DS;
 		if($boolSetAppDir){
-			$path .= self::getAppDirName() . Z_DS;
+			$path .= APP_DIR_NAME . Z_DS;
 		}
 		return $path;
 	}
@@ -134,7 +149,8 @@ class Config
 	 * 获得缓存文件名
 	 * 
 	 * @access public
-	 * @param  int  $intCacheType  缓存类型
+	 * @param  int    $intCacheType  缓存类型
+	 * @param  array  $arrUrlParam   url参数数组
 	 * @return string
 	 */
 	public static function getCacheFileName($intCacheType, $arrUrlParam = ''){
@@ -154,15 +170,23 @@ class Config
 	}
 	
 	/**
-	 * 修正基本的URL参数数组
+	 * 获得控制器信息
 	 * 
-	 * @access public
-	 * @param  array    $arrTarget   要修正的数组
+	 * @access private
+	 * @param  string  $strType            信息类型
+	 * @param  string  $strControllerName  控制器名
+	 * @param  string  $strModuleName      模块名
+	 * @param  string  $strEntryName       入口名
+	 * @return string
 	 */
-	public static function correctBasicUrlParamArray(&$arrTarget){
-		$arrTarget['m'] = $arrTarget['m'] ?? 'index';
-		$arrTarget['e'] = $arrTarget['e'] ?? 'index';
-		$arrTarget['c'] = $arrTarget['c'] ?? 'index';
+	private static function getControllerInfo($strType, $strControllerName, $strModuleName, $strEntryName){
+		$entry = self::getAppDirName($strEntryName);
+		$module = $strModuleName ?: $_GET['m'];
+		$controller = $strControllerName ?: $_GET['c'];
+		if($strType == 'path'){
+			return UNIFIED_PATH . $entry . Z_DS . 'controllers' . Z_DS . $module . Z_DS . $controller . '.php';
+		}
+		return '\\' . $entry . '\\controllers\\' . $module . '\\' . $controller;
 	}
 	
 	/**
@@ -174,24 +198,20 @@ class Config
 	 * @return path
 	 */
 	public static function getControllerPath($strControllerName = '', $strModuleName = '', $strEntryName = ''){
-		$path = $strEntryName ? (UNIFIED_PATH . $strEntryName . Z_DS) : APP_PATH;
-		$strModuleName = $strModuleName ?: $_GET['m'];
-		$strControllerName = $strControllerName ?: $_GET['c'];
-		return $path . 'controllers' . Z_DS . $strModuleName . Z_DS . $strControllerName . '.php';
+		return self::getControllerInfo('path', $strControllerName, $strModuleName, $strEntryName);
 	}
 	
 	/**
 	 * 获得控制器别名
 	 * 
 	 * @access public
+	 * @param  string  $strControllerName  控制器名
 	 * @param  string  $strModuleName      模块名
 	 * @param  string  $strEntryName       入口名
 	 * @return string
 	 */
-	public static function getControllerAlias($strControllerName = '', $strModuleName = ''){
-		$strModuleName = $strModuleName ?: $_GET['m'];
-		$strControllerName = $strControllerName ?: $_GET['c'];
-		return '\\controllers\\' . $strModuleName . '\\' . $strControllerName;
+	public static function getControllerAlias($strControllerName = '', $strModuleName = '', $strEntryName = ''){
+		return self::getControllerInfo('alias', $strControllerName, $strModuleName, $strEntryName);
 	}
 	
 	/**

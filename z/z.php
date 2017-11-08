@@ -12,7 +12,7 @@ class z
 	 * 结合命名空间使用
 	 */
 	public static function autoload($strClassName){
-		$filePath = (strpos($strClassName, 'z') === false ? APP_PATH : UNIFIED_PATH) . strtr($strClassName, array('\\'=>Z_DS)) . '.php';
+		$filePath = UNIFIED_PATH . strtr($strClassName, array('\\'=>Z_DS)) . '.php';
 		if(!is_file($filePath)){
 			return;
 		}

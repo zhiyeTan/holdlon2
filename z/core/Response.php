@@ -133,10 +133,6 @@ class Response
 	 * @return class
 	 */
 	public static function setContent($content){
-		//引号匹配规则
-		$qmmRule = '[\'|\"]';
-		//静态主机地址
-		$staticDomain = rtrim(Config::$options['static_domain'], '/') . '/';
 		//如果响应内容为数组，修正内容类型为json
 		if(is_array($content)){
 			self::$contentType = 'json';
@@ -149,15 +145,10 @@ class Response
 				'data'		=> $content
 			);
 			$content = json_encode($content);
-			//JSON数据时将静态主机的'/'做一下转义
-			$staticDomain = addcslashes($staticDomain, '/');
-			//JSON数据时，引号前有一个转义符，需要匹配一下
-			$qmmRule = '\\\\' . $qmmRule;
 		}
 		//修正静态资源的路径（不包括站外资源引用）
-		$pattern = '/(' . $qmmRule . ')((?!http)[^\'|\"]*?(' . Config::$options['static_suffix'] . '))(' . $qmmRule . ')/i';
-		$replacement = '\1' . $staticDomain . '\2\4';
-		$content = preg_replace($pattern, $replacement, $content);
+		//如果json的值为html并包含静态资源的话，必须在外部转为HTML实体时进行修正
+		$content = Router::redirectStaticResources($content);
 		//保存到属性中
 		self::$content = $content;
 		return self::$_instance;

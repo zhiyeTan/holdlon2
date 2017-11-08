@@ -21,15 +21,10 @@ class App
 		ThrowableHandler::register();
 		//解析请求
 		Router::parse(Request::getQueryString());
-		//设置应用路径
-		if(!Config::setAppPath()){
-			//报错：入口不存在
-			trigger_error(ERR_ENTRY_NOT_EXIST, E_USER_ERROR);
-		}
+		//设置应用的目录名和路径为常量
+		Config::defineAppInfo();
 		//加载应用配置
 		Config::loadAppConfig();
-		//根据配置设置时区
-		date_default_timezone_set(Config::$options['default_timezone']);
 		//获取控制器文件路径
 		$controllerFilePath = Config::getControllerPath();
 		if(!is_file($controllerFilePath)){

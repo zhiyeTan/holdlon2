@@ -130,6 +130,19 @@ class Router
 	}
 	
 	/**
+	 * 重定向静态资源
+	 * 
+	 * @access public
+	 * @param  string  $strContent  内容
+	 * @return string
+	 */
+	public static function redirectStaticResources($strContent){
+		$pattern = '/(\\\?(\'|"))((?!http)[^\'|\"]*?(' . Config::$options['static_suffix'] . '))(\\\?(\'|"))/i';
+		$replacement = '\1' . Config::$options['static_domain'] . '\3\5';
+		return preg_replace($pattern, $replacement, $strContent);
+	}
+	
+	/**
 	 * 转换数组
 	 * 
 	 * @access private

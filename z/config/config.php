@@ -5,19 +5,11 @@ return [
 	//错误提示模式(0友好提示，1明细提示)
 	'tips_mode'				=> 0,
 	
-	//入口文件名与应用位置文件夹名的值对映射
-	'entry_maps'			=> [
-								'index'		=> 'app',
-								'admin'		=> 'admin'
-							],
 	//静态资源的域名
-	//TODO 做一个统一的静态资源管理器，部署在静态目录下
-	//TODO 同时做针对性的nginx/Apache设置，不允许运行非管理器外的非静态文件
-	//TODO 由于多站点调用资源的不可预估性，不提供删除操作
-	'static_domain'			=> 'http://static.tzy.com',
+	'static_domain'			=> 'http://s.tzy.com',
 	
-	//静态资源后缀名(以'|'分割)
-	'static_suffix'			=> 'jpg|png|bmp|gif',
+	//静态资源后缀名(以|分割)
+	'static_suffix'			=> 'js|css|jpg|png|bmp|gif',
 	
 	//服务器数据缓存有效期(单位s) [小于0表示不使用，0表示永久，大于0表示指定值]
 	'data_cache_expire'		=> -1,
