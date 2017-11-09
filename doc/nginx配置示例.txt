@@ -14,6 +14,11 @@ server {
 	if ($rule_0 = "21"){
 		rewrite ^/(.*)$ /index.php?s=$1 last;
 	}
+	
+	#以下部分是禁止访问静态资源的控制器用的
+	#location ^~ /controllers/ {
+	#	deny all;
+	#}
 
 	location ~ \.php(.*)$  {
 		fastcgi_pass   127.0.0.1:9000;

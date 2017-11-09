@@ -109,6 +109,12 @@ class Router
 							$arrRequest[$k] = $v;
 						}
 					}
+					//如果匹配不到短地址则认为当前是省略了入口名的路径（即只有控制器名）
+					//这里的改动兼顾了api下期望省略入口、模块的情况
+					//需要注意的是在创建URL时仍然采用默认的三种模式
+					else{
+						$arrRequest['c'] = $strRequest;
+					}
 					break;
 				case DIRECTORY_ROUTER_MODEL: //目录型模式
 					$tmpArr = explode('/', trim($strRequest, '/'));
@@ -137,7 +143,7 @@ class Router
 	 * @return string
 	 */
 	public static function redirectStaticResources($strContent){
-		$pattern = '/(\\\?(\'|"))((?!http)[^\'|\"]*?(' . Config::$options['static_suffix'] . '))(\\\?(\'|"))/i';
+		$pattern = '/(\\\?(\'|"))((?!http)[^\'|\"]*?\.(' . Config::$options['static_suffix'] . '))(\\\?(\'|"))/i';
 		$replacement = '\1' . Config::$options['static_domain'] . '\3\5';
 		return preg_replace($pattern, $replacement, $strContent);
 	}

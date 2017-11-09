@@ -72,11 +72,13 @@ class Basic
 	 * 列出指定目录的结构树
 	 * 
 	 * @access public
-	 * @param  path    $pathTarget    目录路径
+	 * @param  path    $pathTarget   目录路径
+	 * @param  array   $arrFiles     要过滤的文件数组
 	 * @return array
 	 */
-	public static function listDirTree($pathTarget){
-		return self::recursiveDealDir($pathTarget, true);
+	public static function listDirTree($pathTarget, $arrFiles = []){
+		$trees = self::recursiveDealDir($pathTarget, true);
+		return self::quickHandler($trees, 'children', [__CLASS__, 'filterDirInfo'], [$arrFiles, $pathTarget]);
 	}
 	
 	/**
@@ -119,7 +121,7 @@ class Basic
 					'level'	=> $intLevel
 				);
 				if($type){
-					$res[$i]['children'] = Basic::recursiveDealDir($tmpPath, $boolDelOrList, $intLevel + 1);
+					$res[$i]['children'] = self::recursiveDealDir($tmpPath, $boolDelOrList, $intLevel + 1);
 				}
 				$i++;
 			}
@@ -134,5 +136,59 @@ class Basic
 			}
 		}
 		return $res;
+	}
+	
+	/**
+	 * 递归过滤掉目录树的指定信息
+	 * 
+	 * @access private
+	 * @param  array   $arrDirInfo     目录结构信息
+	 * @param  array   $arrFiles       要过滤的文件数组
+	 * @param  string  $pathBaseDir    基准路径
+	 * @param  int     $intHiddenPath  是否隐藏物理路径
+	 * @return array
+	 */
+	private static function filterDirInfo($arrDirInfo, $arrFiles, $pathBaseDir, $intHiddenPath = true){
+		if(in_array($arrDirInfo['name'], $arrFiles)){
+			return false;
+		}
+		$arrDirInfo['link'] = str_replace(Z_DS, '/', str_replace($pathBaseDir, '', $arrDirInfo['path']));
+		if($intHiddenPath){
+			unset($arrDirInfo['path']);
+		}
+		return $arrDirInfo;
+	}
+	
+	/**
+	 * 快速处理数组
+	 * 
+	 * @access public
+	 * @param  array   $arrTarget    目标数组
+	 * @param  string  $strKey       多维子数组的键名
+	 * @param  array   $funCallBack  回调函数(调用类方法时以数组形式传参，eg:[__CLASS__, 'method'])
+	 * @param  array   $arrParam     回调函数的参数(不包含目标数组，且回调函数的目标数组必须是第一个参数)
+	 * @param  int     $intThread    线程数
+	 * @return array
+	 */
+	public static function quickHandler($arrTarget, $strKey, $funCallBack, $arrParam, $intThread = 5){
+		$size = ceil(count($arrTarget) / $intThread);
+		$chunks = array_pad(array_chunk($arrTarget, $size), $intThread, []);
+		$result = array();
+		for($i = 0; $i < $size; $i++){
+			for($j = 0; $j < $intThread; $j++){
+				if(!empty($chunks[$j][$i])){
+					$tmpParam = $arrParam;
+					array_unshift($tmpParam, $chunks[$j][$i]);
+					$tmpArr = call_user_func_array($funCallBack, $tmpParam);
+					if(!empty($tmpArr[$strKey])){
+						$tmpArr[$strKey] = self::quickHandler($chunks[$j][$i][$strKey], $strKey, $funCallBack, $arrParam, $intThread);
+					}
+					if(!empty($tmpArr)){
+						$result[] = $tmpArr;
+					}
+				}
+			}
+		}
+		return $result;
 	}
 }
