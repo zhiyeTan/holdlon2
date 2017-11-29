@@ -13,12 +13,17 @@ const DIRECTORY_ROUTER_MODEL = 2;
 const AUTHOR_KEY = 'zhiYeTan'; //作者密钥，作为加密的salt
 const BASE_CHAR_MAP = '0aAbBcC1dDeEfF2gGhHiI3jJkKlL4mMnNoO5pPqQrR6sStTuU7vVwWxX8yYzZ9'; //由大小写字母和数字组成的基本字符表
 
-const ERRNO_NONE = 0;//没有发生错误
+//错误代码以'E_'作为前缀
+const E_NONE = 0;//没有发生错误
 
-const ERR_ENTRY_NOT_EXIST = '未开放的传送门';
-const ERR_CONTROLLER_NOT_EXIST = '待充能的魔法节点';
-const ERR_CONTROLLER_METHOD_NOT_EXIST = '法术还没有准备好';
-const ERR_ILLEGAL_PARAMETER = '魔力成份异常';
+//没有静态资源权限(使用ThrowableHandler的方法处理将会返回JSON字符串)
+const E_NO_RESOURCE_PERMISSIONS = 3;
+
+//提示信息以'T_'作为前缀
+const T_ENTRY_NOT_EXIST = '未开放的传送门';
+const T_CONTROLLER_NOT_EXIST = '待充能的魔法节点';
+const T_CONTROLLER_METHOD_NOT_EXIST = '法术还没有准备好';
+const T_ILLEGAL_PARAMETER = '魔力成份异常';
 
 const CACHE_TYPE_STATIC = 0; //静态缓存类型
 const CACHE_TYPE_DYNAMIC = 1; //动态缓存类型

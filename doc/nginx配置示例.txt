@@ -19,6 +19,14 @@ server {
 	#location ^~ /controllers/ {
 	#	deny all;
 	#}
+	
+	#以下部分是防盗链配置(由于在静态资源站点中有提供上传图片的接口，为防止恶意上传，建议不开启以下图片后缀的限制)
+	#location ~* \.(gif|jpg|png|bmp)$ {
+	#	valid_referers none blocked *.tzy.com server_names ~\.google\. ~\.baidu\.;
+	#	if ($invalid_referer) {
+	#		return 403;
+	#	}
+	#}
 
 	location ~ \.php(.*)$  {
 		fastcgi_pass   127.0.0.1:9000;

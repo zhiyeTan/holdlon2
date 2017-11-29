@@ -8,10 +8,14 @@ class ThrowableHandler extends \Exception
 	private static $_file;
 	private static $_line;
 	private static $fatalType = [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE];
+	//通过JSON形式抛出的异常类型
+	private static $errTypeThrowByJson = [
+		E_NO_RESOURCE_PERMISSIONS,
+	];
 	//重定义构造器使 message 变为必须被指定的属性  
-	public function __construct($message, $code = 0){
+	public function __construct($strMessage, $intCode = 0){
 		//确保所有变量都被正确赋值
-		parent::__construct($message, $code);
+		parent::__construct($strMessage, $intCode);
 		self::setAttribute($this->code, $this->message, $this->file, $this->line);
 	}
 	
@@ -68,13 +72,13 @@ class ThrowableHandler extends \Exception
 	/**
 	 * 设置类属性
 	 * 
-	 * @access public
+	 * @access private
      * @param  int     $intCode   错误编号
      * @param  string  $strMsg    详细错误信息
      * @param  path    $pathFile  出错的文件
      * @param  int     $intLine   出错行号
 	 */
-	public static function setAttribute($intCode, $strMsg, $pathFile, $intLine){
+	private static function setAttribute($intCode, $strMsg, $pathFile, $intLine){
 		self::$_code = $intCode;
 		self::$_message = $strMsg;
 		self::$_file = $pathFile;
@@ -84,20 +88,20 @@ class ThrowableHandler extends \Exception
 	/**
 	 * 使用友好的方式输出提示
 	 * 
-	 * @access public
+	 * @access private
 	 * @return string
 	 */
-	public static function getFriendlyTips(){
+	private static function getFriendlyTips(){
 		return '<div style="padding: 24px 48px;"><h1>&gt;_&lt;#</h1><p>' . self::$_message . '</p>';
 	}
 	
 	/**
 	 * 使用规范的方式输出提示
 	 * 
-	 * @access public
+	 * @access private
 	 * @return string
 	 */
-	public static function getNormTips(){
+	private static function getNormTips(){
 		$content  = '<div style="padding: 24px 48px;"><h1>&gt;_&lt;#</h1>';
 		$content .= '<p>code: ' . self::$_code . '</p>';
 		$content .= '<p>message: ' . self::$_message . '</p>';
@@ -112,13 +116,30 @@ class ThrowableHandler extends \Exception
 	 * @access public
 	 */
 	public static function tips(){
-		$content = Config::$options['tips_mode'] ? self::getNormTips() : self::getFriendlyTips();
-		Response::init()
-			->setExpire(0)
-			->setCache(0)
-			->setCode(404)
-			->setContent($content)
-			->send();
+		if(in_array(self::$_code, self::$errTypeThrowByJson)){
+			Response::init()
+				->setCache(0)
+				->setApiErrno(self::$_code)
+				->setApiMessage(self::$_message)
+				->send();
+		}
+		else{
+			$content = Config::$options['tips_mode'] ? self::getNormTips() : self::getFriendlyTips();
+			Response::init()
+				->setExpire(0)
+				->setCache(0)
+				->setCode(404)
+				->setContent($content)
+				->send();
+		}
+		$content = date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']) . ' ';
+		$content .= Request::getIp(0) . ' ';
+		$content .= self::$_code . ' ';
+		$content .= self::$_message . ' ';
+		$content .= self::$_file . ' ';
+		$content .= self::$_line . ' ';
+		$content .= $_SERVER['REQUEST_URI'] . ' ';
+		Log::save('exceptionLog', $content);
 		exit(0);
 	}
 }

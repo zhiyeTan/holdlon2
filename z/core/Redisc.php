@@ -23,6 +23,7 @@ class Redisc
 	private static $clusterCfg = [];//集群配置
 	private static $clusterObj = [];//集群对象[redis1, redis2, redis3...]
 	private static $clusterMap = [];//集群配置与对象的映射[$serverType.'_'.$storeType=>[serverType=>string, storeType=>string, objIdx=>int]]
+	private static $clusterErr = [];//集群故障标记
 	private static $_instance;//类实例
 	//私有的构造函数
 	private function __construct(){
@@ -55,9 +56,11 @@ class Redisc
 	 * @return class
 	 */
 	private static function connect($strType, $boolMaster = true){
-		$storeType = $strType;
+		if(isset(self::$clusterErr[$strType])){
+			return false;
+		}
 		//构造映射的键名
-		$mapKey = ($boolMaster ? 'master' : 'salve') . '_' . $storeType;
+		$mapKey = ($boolMaster ? 'master' : 'salve') . '_' . $strType;
 		//如果存在映射，立即返回对应的redis对象
 		if(isset(self::$clusterMap[$mapKey])){
 			return self::$clusterObj[self::$clusterMap[$mapKey]['objIdx']];
@@ -65,18 +68,18 @@ class Redisc
 		//取得主机配置
 		if($boolMaster){
 			$serverType = 'master';
-			$storeType = empty(self::$clusterCfg['master'][$strType]) ? 'default' : $strType;
+			$strType = empty(self::$clusterCfg['master'][$strType]) ? 'default' : $strType;
 		}
 		//取得从机配置
 		else{
 			$serverType = 'salve';
 			//尝试匹配指定类型的从机
-			if(empty(self::$clusterCfg['salve'][$storeType])){
+			if(empty(self::$clusterCfg['salve'][$strType])){
 				$serverType = 'master';
 				//匹配不到指定类型的从机，尝试匹配该类型的主机
-				if(empty(self::$clusterCfg['master'][$storeType])){
+				if(empty(self::$clusterCfg['master'][$strType])){
 					$serverType = 'salve';
-					$storeType = 'default';
+					$strType = 'default';
 					//匹配不到指定类型的主机时，尝试匹配默认的从机
 					if(empty(self::$clusterCfg['salve']['default'])){
 						$serverType = 'master';
@@ -84,47 +87,49 @@ class Redisc
 				}
 			}
 		}
-		//构建新的映射键名
-		$newMapKey = $serverType . '_' . $storeType;
-		//如果存在映射键名，立即返回对应的redis对象
-		if(isset(self::$clusterMap[$newMapKey])){
-			return self::$clusterObj[self::$clusterMap[$newMapKey]['objIdx']];
-		}
 		//检查在映射中是否有不同键名，但使用相同配置的情况，有则增加对应映射，并返回redis对象
 		foreach(self::$clusterMap as $k => $v){
-			if($v['serverType'] == $serverType && $v['storeType'] == $storeType){
-				self::$clusterMap[$newMapKey] = $v;
+			if($v['serverType'] == $serverType && $v['storeType'] == $strType){
+				self::$clusterMap[$mapKey] = $v;
 				return self::$clusterObj[$v['objIdx']];
 			}
 		}
-		
-		$redis = new Redis();
-		
-		//主服务器仅一个配置
+		//取得对应的连接配置
+		$targetCfg = self::$clusterCfg[$serverType][$strType];
+		//主服务器仅一个配置，转为数组形式
 		if($boolMaster){
-			$targetCfg = self::$clusterCfg[$serverType][$storeType];
-			
+			$targetCfg = array($targetCfg);
 		}
-		//从服务器可能存在多个配置，取得其中一个
-		else{
-			$newObjIdx = count(self::$clusterObj);
-			//TODO 如果是从属服务器，应该随机从服务器列表中抽取一个配置进行连接，直到成功或遍历结束
-			if($serverType == 'salve'){
-				$max = count($targetCfg);
-				$currIdx = $max > self::$randIdx ? $max % self::$randIdx : self::$randIdx % $max;
-				$targetCfg = $targetCfg[$currIdx];
+		//随机取一个配置项进行连接，直到成功或尝试完所有配置项
+		$redis = new Redis();
+		$state = false;
+		do{
+			$subKey = array_rand($targetCfg);
+			$state = $redis->connect($targetCfg[$subKey][0], $targetCfg[$subKey][1]);
+			if(isset($targetCfg[$subKey][2])){
+				$redis->auth($targetCfg[$subKey][2]);
 			}
+			unset($targetCfg[$subKey]);
 		}
-		
-		
-		$redis->connect($targetCfg[0], $targetCfg[1]);
-		self::$clusterObj[] = $redis;
-		self::$clusterMap[$newMapKey] = array(
-			'serverType'	=> $serverType,
-			'storeType'		=> $storeType,
-			'objIdx'		=> $newObjIdx
-		);
-		return $redis;
+		while(!$state && !empty($targetCfg));
+		//成功连接
+		if($state){
+			$newObjIdx = count(self::$clusterObj);
+			self::$clusterObj[] = $redis;
+			self::$clusterMap[$mapKey] = array(
+				'serverType'	=> $serverType,
+				'storeType'		=> $strType,
+				'objIdx'		=> $newObjIdx
+			);
+			return $redis;
+		}
+		//失败
+		else{
+			self::$clusterErr[$strType] = '';
+			$content = date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']) . ' ' . $strType;
+			Log::save('redisFailureLog', $content);
+			return false;
+		}
 	}
 	
 	/**
@@ -138,6 +143,9 @@ class Redisc
 	 */
 	public static function get($strKey, $strType = 'default', $boolAssoc = false){
 		$redis = self::connect($strType, false);
+		if(!$redis){
+			return false;
+		}
 		$value = $redis->get($strKey);
 		return $boolAssoc ? json_decode($value, true) : $value;
 	}
@@ -152,12 +160,14 @@ class Redisc
 	 */
 	public static function set($strKey, $nValue, $strType = 'default', $expire = null){
 		$redis = self::connect($strType);
-		$value = is_array($nValue) ? json_encode($nValue) : $nValue;
-		if($expire && is_int($expire)){
-			$redis->setex($strKey, $expire, $value);
-		}
-		else{
-			$redis->set($strKey, $value);
+		if($redis){
+			$value = is_array($nValue) ? json_encode($nValue) : $nValue;
+			if($expire && is_int($expire)){
+				$redis->setex($strKey, $expire, $value);
+			}
+			else{
+				$redis->set($strKey, $value);
+			}
 		}
 	}
 	
@@ -171,24 +181,26 @@ class Redisc
 	 */
 	public static function setByTransaction($strKey, $nValue, $strType = 'default', $expire = null){
 		$redis = self::connect($strType);
-		$value = is_array($nValue) ? json_encode($nValue) : $nValue;
-		//监听键名
-		$redis->watch($strKey);
-		//开启事务
-		$redis->multi();
-		if($expire && is_int($expire)){
-			$redis->setex($strKey, $expire, $value);
+		if($redis){
+			$value = is_array($nValue) ? json_encode($nValue) : $nValue;
+			//监听键名
+			$redis->watch($strKey);
+			//开启事务
+			$redis->multi();
+			if($expire && is_int($expire)){
+				$redis->setex($strKey, $expire, $value);
+			}
+			else{
+				$redis->set($strKey, $value);
+			}
+			$redis->incr($strKey);
+			if(!$redis->exec()){
+				//取消事务
+				$redis->discard();
+			}
+			//停止监听
+			$redis->unwatch($strKey);
 		}
-		else{
-			$redis->set($strKey, $value);
-		}
-		$redis->incr($strKey);
-		if(!$redis->exec()){
-			//取消事务
-			$redis->discard();
-		}
-		//停止监听
-		$redis->unwatch($strKey);
 	}
 	
 	/**
@@ -200,6 +212,8 @@ class Redisc
 	 */
 	public static function del($strKey, $strType = 'default'){
 		$redis = self::connect($strType);
-		$redis->delete($strKey);
+		if($redis){
+			$redis->delete($strKey);
+		}
 	}
 }

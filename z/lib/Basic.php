@@ -172,7 +172,7 @@ class Basic
 	 */
 	public static function quickHandler($arrTarget, $strKey, $funCallBack, $arrParam, $intThread = 5){
 		$size = ceil(count($arrTarget) / $intThread);
-		$chunks = array_pad(array_chunk($arrTarget, $size), $intThread, []);
+		$chunks = array_chunk($arrTarget, $size);
 		$result = array();
 		for($i = 0; $i < $size; $i++){
 			for($j = 0; $j < $intThread; $j++){

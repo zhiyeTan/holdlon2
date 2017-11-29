@@ -56,7 +56,7 @@ class Controller extends Template
 			Log::save($logName, $content);
 			//参数不合法时触发错误处理
 			if($error){
-				trigger_error(ERR_ILLEGAL_PARAMETER, E_USER_ERROR);
+				trigger_error(T_ILLEGAL_PARAMETER, E_USER_ERROR);
 			}
 			//删除多余的参数
 			foreach($diff as $k){

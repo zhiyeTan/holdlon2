@@ -69,7 +69,7 @@ class Response
 		'xml'			=> 'Content-type: text/xml',
 		'flash'			=> 'Content-Type: application/x-shockw**e-flash'
 	);
-	private static $api_errno = ERRNO_NONE;//api请求的错误标记
+	private static $api_errno = E_NONE;//api请求的错误标记
 	private static $api_message = '';//api请求的提示信息
 	private static $code = 200;//状态码
 	private static $contentType = 'html';//内容类型

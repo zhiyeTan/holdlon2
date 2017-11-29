@@ -29,7 +29,7 @@ class App
 		$controllerFilePath = Config::getControllerPath();
 		if(!is_file($controllerFilePath)){
 			//报错：控制器不存在
-			trigger_error(ERR_CONTROLLER_NOT_EXIST, E_USER_ERROR);
+			trigger_error(T_CONTROLLER_NOT_EXIST, E_USER_ERROR);
 		}
 		//初始化控制器对象
 		$alias = Config::getControllerAlias();
@@ -42,7 +42,7 @@ class App
 		else{
 			if(!method_exists($object, 'main')){
 				//报错：控制器主方法不存在
-				trigger_error(ERR_CONTROLLER_METHOD_NOT_EXIST, E_USER_ERROR);
+				trigger_error(T_CONTROLLER_METHOD_NOT_EXIST, E_USER_ERROR);
 			}
 			// 分别执行GET参数、POST参数的安全校验以及主方法
 			$object->keepSafeQuest();
