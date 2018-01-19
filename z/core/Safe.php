@@ -31,7 +31,7 @@ class Safe
 				break;
 			case 'accepted':
 				// 接受
-				$result = in_array($value, array('1', 'on', 'yes'));
+				$result = in_array($value, ['1', 'on', 'yes']);
 				break;
 			case 'date':
 				// 是否是一个有效日期
@@ -90,7 +90,7 @@ class Safe
 				break;
 			case 'boolean':
 				// 是否为布尔值
-				$result = in_array($value, array(0, 1, true, false));
+				$result = in_array($value, [0, 1, true, false]);
 				break;
 			case 'token':
 				$result = self::token($value);

@@ -12,17 +12,17 @@ class z
 	 * 结合命名空间使用
 	 */
 	public static function autoload($strClassName){
-		$filePath = UNIFIED_PATH . strtr($strClassName, array('\\'=>Z_DS)) . '.php';
+		$filePath = UNIFIED_PATH . strtr($strClassName, ['\\'=>Z_DS]) . '.php';
 		if(!is_file($filePath)){
 			return;
 		}
 		include($filePath);
-		if(!class_exists($strClassName, false) && !interface_exists($strClassName, false)){
+		if(!class_exists($strClassName, false) && !interface_exists($strClassName, false) && !trait_exists($strClassName, false)){
 			die("Unable to find '$strClassName' in file: $filePath. Namespace missing?");
 		}
 	}
 }
 //使用自定义的类加载机制
-spl_autoload_register(array('z', 'autoload'), true, true);
+spl_autoload_register(['z', 'autoload'], true, true);
 //运行应用
 (new z\core\App())->run();

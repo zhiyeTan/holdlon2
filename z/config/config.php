@@ -3,7 +3,7 @@
 return [
 	
 	//错误提示模式(0友好提示，1明细提示)
-	'tips_mode'				=> 0,
+	'tips_mode'				=> 1,
 	
 	//静态资源的域名
 	'static_domain'			=> 'http://s.tzy.com',
@@ -15,7 +15,7 @@ return [
 	'data_cache_expire'		=> -1,
 	
 	//服务器静态缓存有效期(单位s) [小于0表示不使用，0表示永久，大于0表示指定值]
-	'html_cache_expire'		=> 0,
+	'html_cache_expire'		=> -1,
 	
 	//是否启用服务器动态缓存 [0否，1是]
 	'php_cache_enable'		=> 0,

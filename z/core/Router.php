@@ -157,7 +157,7 @@ class Router
 	 */
 	private static function switchArray($arrQuest){
 		$res = [];
-		$tmpArr = array('m', 'e', 'c');
+		$tmpArr = ['m', 'e', 'c'];
 		foreach($arrQuest as $k => $v){
 			if(!empty($tmpArr[$k])){
 				$res[$tmpArr[$k]] = $v;

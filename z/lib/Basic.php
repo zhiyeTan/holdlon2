@@ -103,7 +103,7 @@ class Basic
 	 */
 	private static function recursiveDealDir($pathTarget, $boolDelOrList = false, $intLevel = 0){
 		$i = 0;
-		$res = array();
+		$res = [];
 		$fp = dir($pathTarget);
 		while(false != ($item = $fp->read())){
 			// 跳过.:
@@ -114,12 +114,12 @@ class Basic
 			$type = is_dir($tmpPath);
 			// 这部分是获取文档树用的
 			if($boolDelOrList){
-				$res[$i] = array(
+				$res[$i] = [
 					'name'	=> $item,
 					'path'	=> $tmpPath,
 					'type'	=> $type,
 					'level'	=> $intLevel
-				);
+				];
 				if($type){
 					$res[$i]['children'] = self::recursiveDealDir($tmpPath, $boolDelOrList, $intLevel + 1);
 				}
@@ -173,7 +173,7 @@ class Basic
 	public static function quickHandler($arrTarget, $strKey, $funCallBack, $arrParam, $intThread = 5){
 		$size = ceil(count($arrTarget) / $intThread);
 		$chunks = array_chunk($arrTarget, $size);
-		$result = array();
+		$result = [];
 		for($i = 0; $i < $size; $i++){
 			for($j = 0; $j < $intThread; $j++){
 				if(!empty($chunks[$j][$i])){
@@ -190,5 +190,38 @@ class Basic
 			}
 		}
 		return $result;
+	}
+	
+	/**
+	 * 转为时间戳
+	 * 
+	 * @access public
+	 * @param  string  $date  时间日期
+	 * @return int
+	 */
+	public static function toTimestamp($date){
+		return $date !== intval($date) ? strtotime($date) : $date;
+	}
+	
+	/**
+	 * 根据时间格式获取对应的值
+	 * 
+	 * @access public
+	 * @param  string  $format           格式(默认'Y')
+	 * @param  mixed   $nTime            日期时间/时间戳
+	 * @param  bool    $boolIsTimeStamp  参数是否为时间戳(默认true)
+	 * @return string
+	 */
+	public static function zDate($format = '', $nTime = '', $boolIsTimeStamp = true){
+		if(!$format){
+			$format = 'Y';
+		}
+		if($nTime && !$boolIsTimeStamp){
+			$nTime = strtotime($nTime);
+		}
+		if(!$nTime){
+			$nTime = time();
+		}
+		return date($format, $nTime);
 	}
 }

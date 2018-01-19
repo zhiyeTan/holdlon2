@@ -14,7 +14,7 @@ use z;
 class Response
 {
 	//状态码地图（常用200、301、304、401、404）
-	private static $codeMap = array(
+	private static $codeMap = [
 		100 => 'HTTP/1.1 100 Continue',
 		101 => 'HTTP/1.1 101 Switching Protocols',
 		200 => 'HTTP/1.1 200 OK',
@@ -54,9 +54,9 @@ class Response
 		502 => 'HTTP/1.1 502 Bad Gateway',
 		503 => 'HTTP/1.1 503 Service Unavailable',
 		504 => 'HTTP/1.1 504 Gateway Time-out' 
-	);
+	];
 	//内容类型地图
-	private static $contentTypeMap = array(
+	private static $contentTypeMap = [
 		'html'			=> 'Content-Type: text/html; charset=utf-8',
 		'plain'			=> 'Content-Type: text/plain',
 		'jpeg'			=> 'Content-Type: image/jpeg',
@@ -68,7 +68,7 @@ class Response
 		'json'			=> 'Content-type: application/json',
 		'xml'			=> 'Content-type: text/xml',
 		'flash'			=> 'Content-Type: application/x-shockw**e-flash'
-	);
+	];
 	private static $api_errno = E_NONE;//api请求的错误标记
 	private static $api_message = '';//api请求的提示信息
 	private static $code = 200;//状态码
@@ -139,11 +139,11 @@ class Response
 		}
 		//格式化JSON
 		if(self::$contentType == 'json'){
-			$content = array(
+			$content = [
 				'errno'		=> self::$api_errno,
 				'message'	=> self::$api_message,
 				'data'		=> $content
-			);
+			];
 			$content = json_encode($content);
 		}
 		//修正静态资源的路径（不包括站外资源引用）
@@ -184,11 +184,11 @@ class Response
 	 * 设置是否使用静态缓存
 	 * 
 	 * @access public
-	 * @param  boolean  $status  是否使用缓存
+	 * @param  boolean  $state  是否使用缓存
 	 * @return class
 	 */
-	public static function setCache($status){
-		self::$cache = !!$status;
+	public static function setCache($state){
+		self::$cache = !!$state;
 		return self::$_instance;
 	}
 	

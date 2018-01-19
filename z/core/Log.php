@@ -70,11 +70,11 @@ class Log
 			$i = 0;
 			do{
 				++$i;
-				if(!rename($logPath, $newPath)){
+				if(!($state = rename($logPath, $newPath))){
 					usleep(100); //延迟100毫秒
 				}
 			}
-			while(!$status && $i < $domax);
+			while(!$state && $i < $domax);
 		}
 		Basic::write($logPath, $strContent . PHP_EOL, true, false);
 	}

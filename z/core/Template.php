@@ -13,7 +13,7 @@ use z\lib\Basic;
  */
 class Template
 {
-	private $data = array(); //数据栈
+	private $data = []; //数据栈
 	
 	/**
 	 * 赋值到数据栈中
@@ -90,7 +90,7 @@ class Template
 	 * @return string
 	 */
 	private function parseWidget($strContent){
-		$pattern = array();
+		$pattern = [];
 		preg_match_all('/\{\\$widgetView_([a-zA-Z]*)\}/', $strContent, $res);
 		foreach($res[1] as $k => $v){
 			$widgetPath = Config::getWidgetPath($v);
@@ -134,7 +134,7 @@ class Template
 				break;
 		}
 		preg_match_all($target, $strContent, $res);
-		$pattern = array();
+		$pattern = [];
 		if(!empty($res[0])){
 			foreach($res[0] as $k => $v){
 				// 组成替换数组

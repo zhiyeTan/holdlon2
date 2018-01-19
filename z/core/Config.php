@@ -11,16 +11,11 @@ namespace z\core;
 class Config
 {
 	public static $options = [];//配置项
-	public static $dbConfig = [];//数据库配置
-	public static $redisConfig = [];//redis配置
 	private static $_instance;//实例
 	//私有构造方法
 	private function __construct(){
 		error_reporting(E_ALL);
-		$path = UNIFIED_PATH . 'z' . Z_DS . 'config' . Z_DS;
-		self::$options = require $path . 'config.php';
-		self::$dbConfig = require $path . 'dbConfig.php';
-		self::$redisConfig = require $path . 'redisConfig.php';
+		self::$options = require UNIFIED_PATH . 'z' . Z_DS . 'config' . Z_DS . 'config.php';
 	}
 	//禁止用户复制对象实例
 	public function __clone(){
@@ -65,6 +60,36 @@ class Config
 		self::$options['static_suffix'] = trim(self::$options['static_suffix'], '|');
 		//设定时区
 		date_default_timezone_set(self::$options['default_timezone']);
+	}
+	
+	/**
+	 * 加载配置文件
+	 * 
+	 * @access public
+	 * @param  string  $strFileName  配置文件名
+	 * @return array
+	 */
+	public static function loadConfig($strFileName){
+		$cfg = require UNIFIED_PATH . 'z' . Z_DS . 'config' . Z_DS . $strFileName . '.php';
+		$appCfgFile = APP_PATH . 'config' . Z_DS . $strFileName .'.php';
+		if(is_file($appCfgFile)){
+			$cfg = require $appCfgFile;
+		}
+		return $cfg;
+	}
+	
+	/**
+	 * 加载框架文件
+	 * 
+	 * @access public
+	 * @param  string  $strFileName  文件名
+	 * @param  string  $strDirName   目录名
+	 */
+	public static function loadFrameFile($strFileName, $strDirName = 'lib'){
+		$filePath = UNIFIED_PATH . 'z' . Z_DS . $strDirName . Z_DS . $strFileName . '.php';
+		if(is_file($filePath)){
+			require $filePath;
+		}
 	}
 	
 	/**
@@ -157,11 +182,11 @@ class Config
 		$arrUrlParam = $arrUrlParam ?: $_GET;
 		self::correctBasicUrlParamArray($arrUrlParam);
 		if($intCacheType == CACHE_TYPE_DYNAMIC){
-			$tmp = array(
+			$tmp = [
 				'm'=>$arrUrlParam['m'],
 				'e'=>$arrUrlParam['e'],
 				'c'=>$arrUrlParam['c']
-			);
+			];
 		}
 		else{
 			$tmp = $arrUrlParam;

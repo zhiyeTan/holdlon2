@@ -107,7 +107,7 @@ class Session
 	 * @access public
 	 */
 	public static function clean(){
-		$_SESSION = array();
+		$_SESSION = [];
 		// 如果使用基于cookie的session，则删除包含session ID的cookie
 		if(isset($_COOKIE[session_name()])){
 			cookie::delete(session_name());

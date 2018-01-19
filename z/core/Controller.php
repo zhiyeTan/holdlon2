@@ -11,16 +11,16 @@ namespace z\core;
  */
 class Controller extends Template
 {
-	//受许可的GET参数的键名数组，如：array('cid', 'keyword', 'page')
-	//需验证的GET参数的键名及规则值对数组，如：array('cid'=>'int', 'keyword'=>'addslashes', 'page'=>'int')
-	//需过滤的GET参数的键名，默认值，规则数组，如：array(array('cid', 0, 'int'), array('keyword', '', 'addslashes', array('page', 1, 'int')))
+	//受许可的GET参数的键名数组，如：['cid', 'keyword', 'page']
+	//需验证的GET参数的键名及规则值对数组，如：['cid'=>'int', 'keyword'=>'addslashes', 'page'=>'int']
+	//需过滤的GET参数的键名，默认值，规则数组，如：[['cid', 0, 'int'], ['keyword', '', 'addslashes', ['page', 1, 'int']]]
 	//POST同理
-	protected static $allowGetKeys = array();
-	protected static $verifyGetValues = array();
-	protected static $filterGetValues = array();
-	protected static $allowPostKeys = array();
-	protected static $verifyPostValues = array();
-	protected static $filterPostValues = array();
+	protected static $allowGetKeys = [];
+	protected static $verifyGetValues = [];
+	protected static $filterGetValues = [];
+	protected static $allowPostKeys = [];
+	protected static $verifyPostValues = [];
+	protected static $filterPostValues = [];
 
 	/**
 	 * 校验请求
@@ -34,7 +34,7 @@ class Controller extends Template
 		$allows = $boolIsGET ? self::$allowGetKeys : self::$allowPostKeys;
 		$verifys = $boolIsGET ? self::$verifyGetValues : self::$verifyPostValues;
 		$filters = $boolIsGET ? self::$filterGetValues : self::$filterPostValues;
-		$basics = $boolIsGET ? array('e', 'm', 'c') : array('token');
+		$basics = $boolIsGET ? ['e', 'm', 'c'] : ['token'];
 		$logName = $boolIsGET ? 'illegalGetLog' : 'abnormalPostLog';
 
 		$error = false;
@@ -94,14 +94,14 @@ class Controller extends Template
 	 * @param  boolean   $boolCallDelayAction   是否调用api的延后函数
 	 * @return array
 	 */
-	public function getApiData($strDirName, $strModule, $strController, $arrArgs = array(), $boolCallDelayAction = true){
-		$apiData = array();
+	public function getApiData($strDirName, $strModule, $strController, $arrArgs = [], $boolCallDelayAction = true){
+		$apiData = [];
 		//设置api对应的缓存名，并尝试获取缓存
-		$apiBasicUrlParam = array(
+		$apiBasicUrlParam = [
 			'm' => $strModule,
 			'e' => $strDirName,
 			'c' => $strController
-		);
+		];
 		$apiUrlParam = array_merge($apiBasicUrlParam, $arrArgs);
 		$apiCacheFileName = Config::getCacheFileName(CACHE_TYPE_DATA, $apiUrlParam);
 		//获取json数据

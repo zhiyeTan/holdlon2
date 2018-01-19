@@ -98,7 +98,7 @@ class Redisc
 		$targetCfg = self::$clusterCfg[$serverType][$strType];
 		//主服务器仅一个配置，转为数组形式
 		if($boolMaster){
-			$targetCfg = array($targetCfg);
+			$targetCfg = [$targetCfg];
 		}
 		//随机取一个配置项进行连接，直到成功或尝试完所有配置项
 		$redis = new Redis();
@@ -116,11 +116,11 @@ class Redisc
 		if($state){
 			$newObjIdx = count(self::$clusterObj);
 			self::$clusterObj[] = $redis;
-			self::$clusterMap[$mapKey] = array(
+			self::$clusterMap[$mapKey] = [
 				'serverType'	=> $serverType,
 				'storeType'		=> $strType,
 				'objIdx'		=> $newObjIdx
-			);
+			];
 			return $redis;
 		}
 		//失败
@@ -138,16 +138,16 @@ class Redisc
 	 * @access public
 	 * @param  string  $strKey     键名
 	 * @param  string  $strType    类型
-	 * @param  bool    $boolAssoc  是否取得数组
 	 * @return string/array
 	 */
-	public static function get($strKey, $strType = 'default', $boolAssoc = false){
+	public static function get($strKey, $strType = 'default'){
 		$redis = self::connect($strType, false);
 		if(!$redis){
 			return false;
 		}
 		$value = $redis->get($strKey);
-		return $boolAssoc ? json_decode($value, true) : $value;
+		$jsonData = $value ? json_decode($value, true) : null;
+		return $jsonData === null ? $value : $jsonData;
 	}
 	
 	/**
