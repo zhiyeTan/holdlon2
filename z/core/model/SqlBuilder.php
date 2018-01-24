@@ -6,7 +6,7 @@ use z\core\Config;
 use z\lib\Basic;
 
 /**
- * 查询语句构建类(mysql)
+ * 查询语句构建类(目前仅支持mysql)
  * 
  * @author 谈治烨<594557148@qq.com>
  * @copyright 使用或改进本代码请注明原作者

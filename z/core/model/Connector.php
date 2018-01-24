@@ -2,7 +2,13 @@
 
 namespace z\core\model;
 
-use z\core\Config;
+use Redis;
+use mysqli;
+
+use z\core\{
+	Config,
+	Log
+};
 
 /**
  * 连接类(基于集群)
@@ -61,7 +67,7 @@ class Connector
 	 * 
 	 * @access public
 	 * @param  string  $strTag        集群标记(如redis、mysql等)
-	 * @param  string  $strStoreType  类型
+	 * @param  string  $strStoreType  存储类型
 	 * @param  bool    $boolMaster    是否主机（写操作）
 	 * @return array
 	 */
@@ -118,39 +124,41 @@ class Connector
 		if($boolMaster){
 			$targetCfg = [$targetCfg];
 		}
-		//尝试连接
-		$state = false;
+		//初始化连接对象
 		$connectObj = [];
 		switch($strTag){
-			case 'mysql':
-				$oldReportCode = error_reporting(0);
-				$conn = mysqli_init();
-				do{
-					$subKey = array_rand($targetCfg);
-					//一台服务器可能有多个库，所以这里只负责连服务器，然后外部使用USE语句切换指定库
-					$state = $conn->real_connect($targetCfg[$subKey]['dbhost'], $targetCfg[$subKey]['dbuser'], $targetCfg[$subKey]['dbpwd'], '', $targetCfg[$subKey]['dbport']);
-					unset($targetCfg[$subKey]);
-				}
-				while(!$state && !empty($targetCfg));
+			case CLUSTER_CONNECT_TYPE_MYSQL:
+				$connectObj = mysqli_init();
 				break;
-			case 'redis':
-				$redis = new Redis();
-				//随机取一个配置项进行连接，直到成功或尝试完所有配置项
-				do{
-					$subKey = array_rand($targetCfg);
-					$state = $redis->connect($targetCfg[$subKey][0], $targetCfg[$subKey][1]);
-					if(isset($targetCfg[$subKey][2])){
-						$redis->auth($targetCfg[$subKey][2]);
-					}
-					unset($targetCfg[$subKey]);
-				}
-				while(!$state && !empty($targetCfg));
+			case CLUSTER_CONNECT_TYPE_REDIS:
+				$connectObj = new Redis();
 				break;
 		}
-		
-		
-		
-		
+		//屏蔽掉尝试连接时可能产生的报错
+		$oldReportCode = error_reporting(0);
+		//尝试连接
+		$state = false;
+		do{
+			//随机取一个配置项进行连接，直到成功或尝试完所有配置项(简陋且不可靠的负载策略-.-)
+			$subKey = array_rand($targetCfg);
+			$tmpCfg = $targetCfg[$subKey];
+			switch($strTag){
+				case CLUSTER_CONNECT_TYPE_MYSQL:
+					//一台服务器可能有多个库，所以这里只负责连服务器，然后外部使用USE语句切换指定库
+					$state = $connectObj->real_connect($tmpCfg['dbhost'], $tmpCfg['dbuser'], $tmpCfg['dbpwd'], '', $tmpCfg['dbport']);
+					break;
+				case CLUSTER_CONNECT_TYPE_REDIS:
+					$state = $connectObj->connect($tmpCfg[0], $tmpCfg[1]);
+					if(isset($tmpCfg[2])){
+						$connectObj->auth($tmpCfg[2]);
+					}
+					break;
+			}
+			unset($targetCfg[$subKey]);
+		}
+		while(!$state && !empty($targetCfg));
+		//还原错误报告的级别设置
+		error_reporting($oldReportCode);
 		//成功连接
 		if($state){
 			$this->$clusterMapName[$mapKey] = [
@@ -158,16 +166,15 @@ class Connector
 				'storeType'		=> $strStoreType,
 				'objIdx'		=> count($this->$clusterObjName)
 			];
-			$this->$clusterObjName[] = $redis;
-			return $redis;
+			$this->$clusterObjName[] = $connectObj;
+			return $connectObj;
 		}
 		//失败
 		else{
 			$this->$clusterErrName[$strStoreType] = '';
-			//TODO 记录日志
+			$content = date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']) . ' ' . $strStoreType;
+			Log::save($strTag . 'FailureLog', $content);
 			return false;
 		}
 	}
-	
-	
 }

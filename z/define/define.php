@@ -13,6 +13,10 @@ const DIRECTORY_ROUTER_MODEL = 2;
 const AUTHOR_KEY = 'zhiYeTan'; //作者密钥，作为加密的salt
 const BASE_CHAR_MAP = '0aAbBcC1dDeEfF2gGhHiI3jJkKlL4mMnNoO5pPqQrR6sStTuU7vVwWxX8yYzZ9'; //由大小写字母和数字组成的基本字符表
 
+//集群连接类型
+const CLUSTER_CONNECT_TYPE_MYSQL = 0;//mysql
+const CLUSTER_CONNECT_TYPE_REDIS = 1;//redis
+
 //错误代码以'E_'作为前缀
 const E_NONE = 0;//没有发生错误
 

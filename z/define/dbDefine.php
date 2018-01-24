@@ -1,6 +1,12 @@
 <?php
 
-//解析类型
+//查询结果的返回类型
+const RETURN_QUERY_RESULT_ONE = 0;//取得一个数据
+const RETURN_QUERY_RESULT_COL = 0;//取得一列数据
+const RETURN_QUERY_RESULT_ROW = 0;//取得一行数据
+const RETURN_QUERY_RESULT_ALL = 0;//取得全部数据
+
+//库名、表名规则的解析类型
 const PARSE_TYPE_DB = 1;
 const PARSE_TYPE_TABLE = 2;
 const PARSE_TYPE_PARTITION = 3;
