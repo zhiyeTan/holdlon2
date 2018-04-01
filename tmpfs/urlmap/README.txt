@@ -1,0 +1,2 @@
+﻿此目录用来存放应用的短地址映射文件
+由zCoreRouterCls的mkUrl方法在创建短地址时调用zModCacheCls的saveUrlMap方法生成

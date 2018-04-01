@@ -1,2 +1,1 @@
-﻿此目录用来存放所有基于同一核心的应用的缓存文件
-对应的应用子目录路径从Config类的getAppPathByTmpfs方法获得，由DiskCached类的getCachePath方法创建
+﻿此目录用来存放应用的缓存文件，自动创建对应的应用子目录
